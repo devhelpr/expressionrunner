@@ -1,5 +1,5 @@
 import { ExpressionNode, ExpressionNodeType } from './expression-parser';
-import { isRangeValue , convertGridToNamedVariables} from '../utils/grid-values';
+import { isRangeValue, convertGridToNamedVariables } from '../utils/grid-values';
 /*
 	- Add support namespaces ..
 
@@ -18,7 +18,7 @@ import { isRangeValue , convertGridToNamedVariables} from '../utils/grid-values'
 
 */
 
-let expressionFunctions : any = {
+let expressionFunctions: any = {
 
 }
 
@@ -30,235 +30,235 @@ export function clearExpressionFunctions() {
 	expressionFunctions = {};
 }
 
-export function registerExpressionFunction(name : string, expressionFunction : (value : number, ...args : number[]) => number) {
+export function registerExpressionFunction(name: string, expressionFunction: (value: number, ...args: number[]) => number) {
 	expressionFunctions[name] = expressionFunction;
 }
 
-export function isExpressionFunction(name : string) : boolean {
+export function isExpressionFunction(name: string): boolean {
 	return expressionFunctions[name] !== undefined;
 }
 
 
-function ExpressionTreeExecuteForOperator(expressionTree: ExpressionNode, operator : string, values : any) {
+function ExpressionTreeExecuteForOperator(expressionTree: ExpressionNode, operator: string, values: any) {
 	if (expressionTree.nodes.length > 0) {
 		let currentExpressionNodeType = ExpressionNodeType.expression;
 
 		let currentValue = 0;
 		let currentOperator = "";
 
-		let nodesStack : ExpressionNode[] = [];
-		let nodes : ExpressionNode[] = [];
-		let currentNode  : any = undefined;
+		let nodesStack: ExpressionNode[] = [];
+		let nodes: ExpressionNode[] = [];
+		let currentNode: any = undefined;
 
 		expressionTree.nodes.map((node) => {
 
-			if (node.nodeType === ExpressionNodeType.numeric && 
+			if (node.nodeType === ExpressionNodeType.numeric &&
 				currentExpressionNodeType === ExpressionNodeType.expression) {
 				currentValue = node.value;
 				currentExpressionNodeType = node.nodeType;
 
 				nodesStack.push(node);
 			} else
-			if (node.nodeType === ExpressionNodeType.alpha && 
-				(currentExpressionNodeType === ExpressionNodeType.expression ||
-				 currentExpressionNodeType === ExpressionNodeType.parameters
-				)) {
-				
-				if (node.nodes.length > 0 && expressionFunctions[node.value]) {
-					let parameters : any[] = [];
-					if (node.nodes.length > 0 && node.nodes[0].nodeType === ExpressionNodeType.parameters) {
-						node.nodes[0].nodes.map((currentNode) => {
-							let nodes : ExpressionNode = {
-								nodes : [currentNode],
-								nodeType : ExpressionNodeType.expression,
+				if (node.nodeType === ExpressionNodeType.alpha &&
+					(currentExpressionNodeType === ExpressionNodeType.expression ||
+						currentExpressionNodeType === ExpressionNodeType.parameters
+					)) {
+
+					if (node.nodes.length > 0 && expressionFunctions[node.value]) {
+						let parameters: any[] = [];
+						if (node.nodes.length > 0 && node.nodes[0].nodeType === ExpressionNodeType.parameters) {
+							node.nodes[0].nodes.map((currentNode) => {
+								let nodes: ExpressionNode = {
+									nodes: [currentNode],
+									nodeType: ExpressionNodeType.expression,
+									value: 0
+								}
+								parameters.push(ExpressionTreeExecute(nodes, values));
+								return true;
+							});
+							currentValue = expressionFunctions[node.value](...parameters);
+						} else {
+							let nodes: ExpressionNode = {
+								nodes: node.nodes,
+								nodeType: ExpressionNodeType.expression,
 								value: 0
 							}
-							parameters.push(ExpressionTreeExecute(nodes, values));
-							return true;
-						});
-						currentValue = expressionFunctions[node.value](...parameters);
-					} else {
-						let nodes : ExpressionNode = {
-							nodes : node.nodes,
-							nodeType : ExpressionNodeType.expression,
-							value: 0
-						}
-						const value = ExpressionTreeExecute(nodes, values);
-						if (isRangeValue(value)) {
-							if (values.values) {
-								currentValue = expressionFunctions[node.value](value, values);
-							} else {
-								currentValue = 0;
-							}
-						} else {
-							currentValue = expressionFunctions[node.value](value);
-						}
-					} 
-				} else {
-					if (isRangeValue(node.value)) {
-						currentValue = node.value;
-					} else {
-						if (node.value.indexOf(".") > 0) {
-							currentValue = 0;
-							const splitted = node.value.split('.');
-							if (splitted.length == 2) {
-								if ((nameSpaceCache as any)[splitted[0]]) {
-									currentValue = (nameSpaceCache as any)[splitted[0]][splitted[1]];
+							const value = ExpressionTreeExecute(nodes, values);
+							if (isRangeValue(value)) {
+								if (values.values) {
+									currentValue = expressionFunctions[node.value](value, values);
 								} else {
-									const variables = convertGridToNamedVariables(values[splitted[0]]);
-									(nameSpaceCache as any)[splitted[0]] = variables;
-
-									currentValue = Number(variables[splitted[1]]) || 0;
+									currentValue = 0;
 								}
-							} 
-						} else {
-							currentValue = Number(values[node.value]) || 0;
+							} else {
+								currentValue = expressionFunctions[node.value](value);
+							}
 						}
-					}
-				}
-				currentExpressionNodeType = ExpressionNodeType.numeric;
-				
-				let newNode = {
-					value : currentValue,
-					nodeType : ExpressionNodeType.numeric,
-					nodes : []
-				}
-
-				nodesStack.push(newNode);
-			} else
-
-
-			if (node.nodeType === ExpressionNodeType.operator && 
-				currentExpressionNodeType === ExpressionNodeType.expression) {
-				console.log("unexpected expression node" , expressionTree, nodes, nodesStack, currentNode);
-				throw new Error("unexpected expression node");
-			} else
-
-			if (
-				(node.nodeType === ExpressionNodeType.operator && 
-					currentExpressionNodeType === ExpressionNodeType.alpha) ||
-				(node.nodeType === ExpressionNodeType.operator && 
-					currentExpressionNodeType === ExpressionNodeType.numeric)
-				) {
-
-				currentOperator = node.value;
-				currentExpressionNodeType = node.nodeType;
-
-				nodesStack.push(node);
-			} else
-
-			if (	
-					(
-						node.nodeType === ExpressionNodeType.numeric ||
-						node.nodeType === ExpressionNodeType.alpha
-					) && 
-					currentExpressionNodeType === ExpressionNodeType.operator
-				) {
-				
-				currentExpressionNodeType = ExpressionNodeType.numeric;
-				let valueForExpression = 0;
-				if (node.nodeType === ExpressionNodeType.alpha) {
-					if (node.nodes.length > 0 && expressionFunctions[node.value]) {
-
-						let nodes : ExpressionNode = {
-							nodes : node.nodes,
-							nodeType : ExpressionNodeType.expression,
-							value: 0
-						}
-						valueForExpression = expressionFunctions[node.value](								
-							ExpressionTreeExecute(nodes, values)
-						)
 					} else {
 						if (isRangeValue(node.value)) {
-							throw new Error(`Range ${node.value} not supported for operators`)
+							currentValue = node.value;
 						} else {
-							valueForExpression = Number(values[node.value]) || 0;
+							if (node.value.indexOf(".") > 0) {
+								currentValue = 0;
+								const splitted = node.value.split('.');
+								if (splitted.length == 2) {
+									if ((nameSpaceCache as any)[splitted[0]]) {
+										currentValue = (nameSpaceCache as any)[splitted[0]][splitted[1]];
+									} else {
+										const variables = convertGridToNamedVariables(values[splitted[0]]);
+										(nameSpaceCache as any)[splitted[0]] = variables;
+
+										currentValue = Number(variables[splitted[1]]) || 0;
+									}
+								}
+							} else {
+								currentValue = Number(values[node.value]) || 0;
+							}
 						}
 					}
-				} else {
-					valueForExpression = node.value;
-				}
+					currentExpressionNodeType = ExpressionNodeType.numeric;
 
-				if (currentOperator === "^" && operator.indexOf(currentOperator) >= 0) {
-					currentValue = Math.pow(currentValue , valueForExpression);
-					currentNode = {
-						nodeType : ExpressionNodeType.numeric,
-						value : currentValue,
-						nodes : []
+					let newNode = {
+						value: currentValue,
+						nodeType: ExpressionNodeType.numeric,
+						nodes: []
 					}
-					nodesStack.pop();
-					nodesStack.pop();
 
+					nodesStack.push(newNode);
 				} else
-				if (currentOperator === "+" && operator.indexOf(currentOperator) >= 0) {
-					currentValue += valueForExpression;
 
-					currentNode = {
-						nodeType : ExpressionNodeType.numeric,
-						value : currentValue,
-						nodes : []
-					}
-					nodesStack.pop();
-					nodesStack.pop();
 
-				} else
-				if (currentOperator === "-" && operator.indexOf(currentOperator) >= 0) {
-					currentValue -= valueForExpression;
+					if (node.nodeType === ExpressionNodeType.operator &&
+						currentExpressionNodeType === ExpressionNodeType.expression) {
+						console.log("unexpected expression node", expressionTree, nodes, nodesStack, currentNode);
+						throw new Error("unexpected expression node");
+					} else
 
-					currentNode = {
-						nodeType : ExpressionNodeType.numeric,
-						value : currentValue,
-						nodes : []
-					}
-					nodesStack.pop();
-					nodesStack.pop();
+						if (
+							(node.nodeType === ExpressionNodeType.operator &&
+								currentExpressionNodeType === ExpressionNodeType.alpha) ||
+							(node.nodeType === ExpressionNodeType.operator &&
+								currentExpressionNodeType === ExpressionNodeType.numeric)
+						) {
 
-				} else 
-				if (currentOperator === "*" && operator.indexOf(currentOperator) >= 0) {
-					
-					currentValue *= valueForExpression;
-					
-					currentNode = {
-						nodeType : ExpressionNodeType.numeric,
-						value : currentValue,
-						nodes : []
-					}
-					nodesStack.pop();
-					nodesStack.pop();
+							currentOperator = node.value;
+							currentExpressionNodeType = node.nodeType;
 
-				} else				
-				if (currentOperator === "/" && operator.indexOf(currentOperator) >= 0) {
-					currentValue /= valueForExpression;
+							nodesStack.push(node);
+						} else
 
-					currentNode = {
-						nodeType : ExpressionNodeType.numeric,
-						value : currentValue,
-						nodes : []
-					}
-					nodesStack.pop();
-					nodesStack.pop();
-		
-				} else {
+							if (
+								(
+									node.nodeType === ExpressionNodeType.numeric ||
+									node.nodeType === ExpressionNodeType.alpha
+								) &&
+								currentExpressionNodeType === ExpressionNodeType.operator
+							) {
 
-					if (currentNode !== undefined) {
-						const operator : ExpressionNode = nodesStack.pop() as ExpressionNode;
-						nodesStack.push(currentNode);
-						currentNode = undefined;
-						nodesStack.push(operator);
-					}
-					currentValue = node.value;
-					nodesStack.push(node);
-				}
-				
-			}
+								currentExpressionNodeType = ExpressionNodeType.numeric;
+								let valueForExpression = 0;
+								if (node.nodeType === ExpressionNodeType.alpha) {
+									if (node.nodes.length > 0 && expressionFunctions[node.value]) {
+
+										let nodes: ExpressionNode = {
+											nodes: node.nodes,
+											nodeType: ExpressionNodeType.expression,
+											value: 0
+										}
+										valueForExpression = expressionFunctions[node.value](
+											ExpressionTreeExecute(nodes, values)
+										)
+									} else {
+										if (isRangeValue(node.value)) {
+											throw new Error(`Range ${node.value} not supported for operators`)
+										} else {
+											valueForExpression = Number(values[node.value]) || 0;
+										}
+									}
+								} else {
+									valueForExpression = node.value;
+								}
+
+								if (currentOperator === "^" && operator.indexOf(currentOperator) >= 0) {
+									currentValue = Math.pow(currentValue, valueForExpression);
+									currentNode = {
+										nodeType: ExpressionNodeType.numeric,
+										value: currentValue,
+										nodes: []
+									}
+									nodesStack.pop();
+									nodesStack.pop();
+
+								} else
+									if (currentOperator === "+" && operator.indexOf(currentOperator) >= 0) {
+										currentValue += valueForExpression;
+
+										currentNode = {
+											nodeType: ExpressionNodeType.numeric,
+											value: currentValue,
+											nodes: []
+										}
+										nodesStack.pop();
+										nodesStack.pop();
+
+									} else
+										if (currentOperator === "-" && operator.indexOf(currentOperator) >= 0) {
+											currentValue -= valueForExpression;
+
+											currentNode = {
+												nodeType: ExpressionNodeType.numeric,
+												value: currentValue,
+												nodes: []
+											}
+											nodesStack.pop();
+											nodesStack.pop();
+
+										} else
+											if (currentOperator === "*" && operator.indexOf(currentOperator) >= 0) {
+
+												currentValue *= valueForExpression;
+
+												currentNode = {
+													nodeType: ExpressionNodeType.numeric,
+													value: currentValue,
+													nodes: []
+												}
+												nodesStack.pop();
+												nodesStack.pop();
+
+											} else
+												if (currentOperator === "/" && operator.indexOf(currentOperator) >= 0) {
+													currentValue /= valueForExpression;
+
+													currentNode = {
+														nodeType: ExpressionNodeType.numeric,
+														value: currentValue,
+														nodes: []
+													}
+													nodesStack.pop();
+													nodesStack.pop();
+
+												} else {
+
+													if (currentNode !== undefined) {
+														const operator: ExpressionNode = nodesStack.pop() as ExpressionNode;
+														nodesStack.push(currentNode);
+														currentNode = undefined;
+														nodesStack.push(operator);
+													}
+													currentValue = node.value;
+													nodesStack.push(node);
+												}
+
+							}
 
 			return node;
 		});
-		
+
 		if (nodesStack.length > 0) {
 			nodes.push(...nodesStack);
 		}
-		
+
 		if (currentNode !== undefined) {
 			nodes.push(currentNode);
 		}
@@ -277,25 +277,25 @@ function ExpressionTreeExecuteForOperator(expressionTree: ExpressionNode, operat
 	};
 }
 
-function ExpressionTreeExecute(expressionTree: ExpressionNode, values : any) {
-		
+function ExpressionTreeExecute(expressionTree: ExpressionNode, values: any) {
+
 	if (expressionTree.nodes.length > 0) {
 
-		let nodeList : ExpressionNode[] = expressionTree.nodes.map((node) => {
+		let nodeList: ExpressionNode[] = expressionTree.nodes.map((node) => {
 			if (node.nodeType === ExpressionNodeType.expression && node.nodes.length > 0) {
 				let newNode = {
-					value : ExpressionTreeExecute(node , values),
-					nodeType : ExpressionNodeType.numeric,
-					nodes : []
+					value: ExpressionTreeExecute(node, values),
+					nodeType: ExpressionNodeType.numeric,
+					nodes: []
 				}
 				return newNode;
 			}
 			return node;
 		});
 
-		let nodes : ExpressionNode = {
-			nodes : nodeList,
-			nodeType : ExpressionNodeType.expression,
+		let nodes: ExpressionNode = {
+			nodes: nodeList,
+			nodeType: ExpressionNodeType.expression,
 			value: 0
 		}
 
@@ -306,24 +306,24 @@ function ExpressionTreeExecute(expressionTree: ExpressionNode, values : any) {
 		if (nodes.nodes.length > 0) {
 			return nodes.nodes[0].value;
 		}
-		return 0;		
+		return 0;
 	}
 
 	return false;
 }
 
-export function executeExpressionTree(expressionTree: ExpressionNode, values : any) {
+export function executeExpressionTree(expressionTree: ExpressionNode, values: any) {
 	nameSpaceCache = {};
 	return ExpressionTreeExecute(expressionTree, values);
 }
 
-export function extractValueParametersFromExpressionTree(tree : ExpressionNode) : string[] {
+export function extractValueParametersFromExpressionTree(tree: ExpressionNode): string[] {
 
-	const extractDeeper = () : string[] => {
-		let result = tree.nodes.map((node : ExpressionNode) => {
+	const extractDeeper = (): string[] => {
+		let result = tree.nodes.map((node: ExpressionNode) => {
 			return [...extractValueParametersFromExpressionTree(node)];
 		});
-		let parameters : string[] = [];
+		let parameters: string[] = [];
 		result.map((parameter) => {
 			parameter.map((parameterName) => {
 				parameters.push(parameterName);
