@@ -46,3 +46,26 @@ test('calculates unknown() without function being available', () => {
   let tree = createExpressionTree('unknown()');
   expect(executeExpressionTree(tree, {})).toBe(0);
 });
+
+test('calculates a+b', () => {
+  let tree = createExpressionTree('a+b');
+  expect(executeExpressionTree(tree, { a: 2, b: 6 })).toBe(8);
+  expect(executeExpressionTree(tree, { a: 5, b: 2 })).toBe(7);
+});
+
+test('calculates a+b/a', () => {
+  let tree = createExpressionTree('a+b/a');
+  expect(executeExpressionTree(tree, { a: 2, b: 6 })).toBe(5);
+});
+
+test('calculates a * b / c * d', () => {
+  let tree = createExpressionTree('a * b / c * d');
+  expect(
+    executeExpressionTree(tree, {
+      a: 5,
+      b: 8,
+      c: 2,
+      d: 4,
+    })
+  ).toBe(80);
+});

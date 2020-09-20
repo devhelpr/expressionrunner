@@ -257,7 +257,7 @@ function ExpressionTreeExecuteForOperator(
             currentNode = undefined;
             nodesStack.push(operator);
           }
-          currentValue = node.value;
+          currentValue = valueForExpression;
           nodesStack.push(node);
         }
       }
