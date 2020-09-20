@@ -40,6 +40,22 @@ export function isExpressionFunction(name: string): boolean {
   return expressionFunctions[name] !== undefined;
 }
 
+function isLastNodeOfOperatorOrValue(
+  nodesStack: ExpressionNode[],
+  operator: string
+) {
+  if (nodesStack.length > 0) {
+    const lastNode = nodesStack[nodesStack.length - 1];
+    return (
+      (lastNode.nodeType === ExpressionNodeType.operator &&
+        lastNode.value === operator) ||
+      lastNode.nodeType === ExpressionNodeType.numeric ||
+      lastNode.nodeType === ExpressionNodeType.alpha
+    );
+  }
+  return false;
+}
+
 function ExpressionTreeExecuteForOperator(
   expressionTree: ExpressionNode,
   operator: string,
@@ -197,7 +213,9 @@ function ExpressionTreeExecuteForOperator(
             nodes: [],
           };
           nodesStack.pop();
-          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '^')) {
+            nodesStack.pop();
+          }
         } else if (
           currentOperator === '+' &&
           operator.indexOf(currentOperator) >= 0
@@ -210,7 +228,9 @@ function ExpressionTreeExecuteForOperator(
             nodes: [],
           };
           nodesStack.pop();
-          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '+')) {
+            nodesStack.pop();
+          }
         } else if (
           currentOperator === '-' &&
           operator.indexOf(currentOperator) >= 0
@@ -223,7 +243,9 @@ function ExpressionTreeExecuteForOperator(
             nodes: [],
           };
           nodesStack.pop();
-          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '-')) {
+            nodesStack.pop();
+          }
         } else if (
           currentOperator === '*' &&
           operator.indexOf(currentOperator) >= 0
@@ -236,7 +258,9 @@ function ExpressionTreeExecuteForOperator(
             nodes: [],
           };
           nodesStack.pop();
-          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '*')) {
+            nodesStack.pop();
+          }
         } else if (
           currentOperator === '/' &&
           operator.indexOf(currentOperator) >= 0
@@ -249,7 +273,9 @@ function ExpressionTreeExecuteForOperator(
             nodes: [],
           };
           nodesStack.pop();
-          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '/')) {
+            nodesStack.pop();
+          }
         } else {
           if (currentNode !== undefined) {
             const operator: ExpressionNode = nodesStack.pop() as ExpressionNode;
