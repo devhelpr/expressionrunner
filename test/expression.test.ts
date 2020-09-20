@@ -74,3 +74,12 @@ test('calculates a+5*b*a', () => {
   let tree = createExpressionTree('a+5*b*a');
   expect(executeExpressionTree(tree, { a: 2, b: 3 })).toBe(32);
 });
+test('calculates a+(5*b*a)', () => {
+  let tree = createExpressionTree('a+(5*b*a)');
+  expect(executeExpressionTree(tree, { a: 2, b: 3 })).toBe(32);
+});
+
+test('calculates a+5*(b*a)', () => {
+  let tree = createExpressionTree('a+5*(b*a)');
+  expect(executeExpressionTree(tree, { a: 2, b: 3 })).toBe(32);
+});
