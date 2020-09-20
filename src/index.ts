@@ -15,6 +15,11 @@ import {
   getRangeValueParameters,
 } from './utils/grid-values';
 
+function runExpression(expression: string, values?: any) {
+  const tree = createExpressionTree(expression);
+  return executeExpressionTree(tree, values || {});
+}
+
 export {
   clearExpressionFunctions,
   convertGridToNamedVariables,
@@ -26,4 +31,5 @@ export {
   getRangeFromValues,
   getRangeValueParameters,
   registerExpressionFunction,
+  runExpression,
 };

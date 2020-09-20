@@ -1,8 +1,11 @@
 import { createExpressionTree } from '../src/components/expression-parser';
+
 import {
   executeExpressionTree,
   registerExpressionFunction,
 } from '../src/components/expression-tree-execute';
+
+import { runExpression } from '../src/index';
 
 registerExpressionFunction('Math.PI', () => {
   return Math.PI;
@@ -82,4 +85,14 @@ test('calculates a+(5*b*a)', () => {
 test('calculates a+5*(b*a)', () => {
   let tree = createExpressionTree('a+5*(b*a)');
   expect(executeExpressionTree(tree, { a: 2, b: 3 })).toBe(32);
+});
+
+test('basic runExpression', () => {
+  const result = runExpression('6+7');
+  expect(result).toBe(13);
+});
+
+test('basic runExpression with variables', () => {
+  const result = runExpression('a * b', { a: 9, b: 8 });
+  expect(result).toBe(72);
 });
