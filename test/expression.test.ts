@@ -284,12 +284,27 @@ test('calculates 1>1000', () => {
   expect(executeExpressionTree(tree, {})).toBe(0);
 });
 
-test('calculates !1', () => {
-  let tree = createExpressionTree('!1');
-  expect(executeExpressionTree(tree, {})).toBe(0);
+test('calculates ~15', () => {
+  let tree = createExpressionTree('~15');
+  expect(executeExpressionTree(tree, {})).toBe(-16);
 });
 
-test('calculates !1000>1', () => {
-  let tree = createExpressionTree('!1000>1');
-  expect(executeExpressionTree(tree, {})).toBe(0);
+test('calculates 1000>=1000', () => {
+  let tree = createExpressionTree('1000>=1000');
+  expect(executeExpressionTree(tree, {})).toBe(1);
+});
+
+test('calculates 5<<1', () => {
+  let tree = createExpressionTree('5<<1');
+  expect(executeExpressionTree(tree, {})).toBe(10);
+});
+
+test('calculates 5>>1', () => {
+  let tree = createExpressionTree('5>>1');
+  expect(executeExpressionTree(tree, {})).toBe(2);
+});
+
+test('calculates 3**2', () => {
+  let tree = createExpressionTree('3**2');
+  expect(executeExpressionTree(tree, {})).toBe(9);
 });

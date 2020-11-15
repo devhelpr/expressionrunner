@@ -29,7 +29,29 @@ export interface ExpressionNode {
 
 let expressionState: ExpressionState = ExpressionState.empty;
 const alphaRegex = new RegExp(/^[a-zA-Z]+$/i);
-const supportedOperators = '+-/*=^&|<>!%';
+const supportedOperators = [
+  '+',
+  '-',
+  '/',
+  '*',
+  '=',
+  '^',
+  '&',
+  '|',
+  '<',
+  '>',
+  '~',
+  '%',
+  '&&',
+  '||',
+  '>=',
+  '<=',
+  '!',
+  '>>',
+  '<<',
+  '>>>',
+  '**',
+];
 
 export function ExpressionParser(expression: string) {
   let numericValue = '';
@@ -158,7 +180,10 @@ export function ExpressionParser(expression: string) {
       } else if (character === ' ') {
       }
     } else if (expressionState === ExpressionState.operator) {
-      if ((character >= '0' && character <= '9') || character === '.') {
+      if (supportedOperators.indexOf(currentOperator + character) >= 0) {
+        currentOperator = currentOperator + character;
+        console.log('currentOperator', currentOperator);
+      } else if ((character >= '0' && character <= '9') || character === '.') {
         let operatorNode = {
           nodeType: ExpressionNodeType.operator,
           nodes: [],

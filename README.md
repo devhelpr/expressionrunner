@@ -2,8 +2,10 @@
 
 Simple expression engine without external dependencies:
 
-- Standard support for the following operators : / * + - % 
-- Support for logic operators : & | ^ > < !
+- Standard support for the following operators : / * + - % ** using BODMAS operator precedence
+- Support for logic not and bitwise not
+- Support for logic operators : && ||
+- Support for bitwise operators : & | ^ ~ >> << >>>
 - Support for "()" groups 
 - Support for named variables in expressions
 - Support for custom functions

@@ -58,7 +58,7 @@ function isLastNodeOfOperatorOrValue(
 
 function ExpressionTreeExecuteForOperator(
   expressionTree: ExpressionNode,
-  operator: string,
+  operator: string[],
   values: any
 ) {
   if (expressionTree.nodes.length > 0) {
@@ -240,6 +240,81 @@ function ExpressionTreeExecuteForOperator(
             nodesStack.pop();
           }
         } else if (
+          currentOperator === '<<' &&
+          operator.indexOf(currentOperator) >= 0
+        ) {
+          currentValue = currentValue << valueForExpression;
+
+          currentNode = {
+            nodeType: ExpressionNodeType.numeric,
+            value: currentValue,
+            nodes: [],
+          };
+          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '<<')) {
+            nodesStack.pop();
+          }
+        } else if (
+          currentOperator === '>>>' &&
+          operator.indexOf(currentOperator) >= 0
+        ) {
+          currentValue = currentValue >>> valueForExpression;
+
+          currentNode = {
+            nodeType: ExpressionNodeType.numeric,
+            value: currentValue,
+            nodes: [],
+          };
+          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '>>>')) {
+            nodesStack.pop();
+          }
+        } else if (
+          currentOperator === '>>' &&
+          operator.indexOf(currentOperator) >= 0
+        ) {
+          currentValue = currentValue >> valueForExpression;
+
+          currentNode = {
+            nodeType: ExpressionNodeType.numeric,
+            value: currentValue,
+            nodes: [],
+          };
+          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '>>')) {
+            nodesStack.pop();
+          }
+        } else if (
+          currentOperator === '&&' &&
+          operator.indexOf(currentOperator) >= 0
+        ) {
+          currentValue = currentValue && valueForExpression;
+
+          currentNode = {
+            nodeType: ExpressionNodeType.numeric,
+            value: currentValue,
+            nodes: [],
+          };
+          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '&&')) {
+            nodesStack.pop();
+          }
+        } else if (
+          currentOperator === '||' &&
+          operator.indexOf(currentOperator) >= 0
+        ) {
+          currentValue = currentValue || valueForExpression;
+
+          currentNode = {
+            nodeType: ExpressionNodeType.numeric,
+            value: currentValue,
+            nodes: [],
+          };
+          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '||')) {
+            nodesStack.pop();
+          }
+        } else if (
           currentOperator === '&' &&
           operator.indexOf(currentOperator) >= 0
         ) {
@@ -270,6 +345,21 @@ function ExpressionTreeExecuteForOperator(
             nodesStack.pop();
           }
         } else if (
+          currentOperator === '>=' &&
+          operator.indexOf(currentOperator) >= 0
+        ) {
+          currentValue = Number(currentValue >= valueForExpression);
+
+          currentNode = {
+            nodeType: ExpressionNodeType.numeric,
+            value: currentValue,
+            nodes: [],
+          };
+          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '>=')) {
+            nodesStack.pop();
+          }
+        } else if (
           currentOperator === '>' &&
           operator.indexOf(currentOperator) >= 0
         ) {
@@ -282,6 +372,21 @@ function ExpressionTreeExecuteForOperator(
           };
           nodesStack.pop();
           if (isLastNodeOfOperatorOrValue(nodesStack, '>')) {
+            nodesStack.pop();
+          }
+        } else if (
+          currentOperator === '<=' &&
+          operator.indexOf(currentOperator) >= 0
+        ) {
+          currentValue = Number(currentValue <= valueForExpression);
+
+          currentNode = {
+            nodeType: ExpressionNodeType.numeric,
+            value: currentValue,
+            nodes: [],
+          };
+          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '<=')) {
             nodesStack.pop();
           }
         } else if (
@@ -315,6 +420,20 @@ function ExpressionTreeExecuteForOperator(
             nodesStack.pop();
           }
         } else if (
+          currentOperator === '~' &&
+          operator.indexOf(currentOperator) >= 0
+        ) {
+          currentValue = Number(~valueForExpression);
+          currentNode = {
+            nodeType: ExpressionNodeType.numeric,
+            value: currentValue,
+            nodes: [],
+          };
+          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '~')) {
+            nodesStack.pop();
+          }
+        } else if (
           currentOperator === '+' &&
           operator.indexOf(currentOperator) >= 0
         ) {
@@ -342,6 +461,21 @@ function ExpressionTreeExecuteForOperator(
           };
           nodesStack.pop();
           if (isLastNodeOfOperatorOrValue(nodesStack, '-')) {
+            nodesStack.pop();
+          }
+        } else if (
+          currentOperator === '**' &&
+          operator.indexOf(currentOperator) >= 0
+        ) {
+          currentValue = currentValue ** valueForExpression;
+
+          currentNode = {
+            nodeType: ExpressionNodeType.numeric,
+            value: currentValue,
+            nodes: [],
+          };
+          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '**')) {
             nodesStack.pop();
           }
         } else if (
@@ -435,10 +569,26 @@ function ExpressionTreeExecute(expressionTree: ExpressionNode, values: any) {
 
     // .. if the first is removed.. then tests fail
     // .. in the first iteration the variables are replaced
-    nodes = ExpressionTreeExecuteForOperator(nodes, '', values);
-    nodes = ExpressionTreeExecuteForOperator(nodes, '/*', values);
-    nodes = ExpressionTreeExecuteForOperator(nodes, '+-', values);
-    nodes = ExpressionTreeExecuteForOperator(nodes, '=^&|<>!%', values);
+    nodes = ExpressionTreeExecuteForOperator(nodes, [], values);
+    nodes = ExpressionTreeExecuteForOperator(nodes, ['!', '~'], values);
+    nodes = ExpressionTreeExecuteForOperator(nodes, ['/', '*', '**'], values);
+    nodes = ExpressionTreeExecuteForOperator(nodes, ['+', '-'], values);
+    nodes = ExpressionTreeExecuteForOperator(
+      nodes,
+      ['>>', '<<', '>>>'],
+      values
+    );
+    nodes = ExpressionTreeExecuteForOperator(
+      nodes,
+      ['=', '<', '>', '>=', '<='],
+      values
+    );
+    nodes = ExpressionTreeExecuteForOperator(
+      nodes,
+      ['^', '&', '|', '%'],
+      values
+    );
+    nodes = ExpressionTreeExecuteForOperator(nodes, ['&&', '||'], values);
     if (nodes.nodes.length > 0) {
       return nodes.nodes[0].value;
     }
