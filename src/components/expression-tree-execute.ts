@@ -81,12 +81,15 @@ function ExpressionTreeExecuteForOperator(
 
         nodesStack.push(node);
       } else if (
-        node.nodeType === ExpressionNodeType.alpha &&
-        (currentExpressionNodeType === ExpressionNodeType.expression ||
-          currentExpressionNodeType === ExpressionNodeType.parameters)
+        node.nodeType === ExpressionNodeType.alpha 
       ) {
+        /*
+        &&
+        (currentExpressionNodeType === ExpressionNodeType.expression)
+        */
         if (node.nodes.length > 0 && expressionFunctions[node.value]) {
           let parameters: any[] = [];
+          /*
           if (
             node.nodes.length > 0 &&
             node.nodes[0].nodeType === ExpressionNodeType.parameters
@@ -101,12 +104,59 @@ function ExpressionTreeExecuteForOperator(
               return true;
             });
             currentValue = expressionFunctions[node.value](...parameters);
-          } else {
-            let nodes: ExpressionNode = {
-              nodes: node.nodes,
+          } else
+          */ 
+          
+            let nodesHelper: ExpressionNode = {
+              nodes: [],
               nodeType: ExpressionNodeType.expression,
               value: 0,
             };
+            let nodeForParameterExtraction = node;
+            if (node.nodes.length == 1 && node.nodes[0].nodeType === ExpressionNodeType.expression) {
+              nodeForParameterExtraction = node.nodes[0];
+            }
+            nodeForParameterExtraction.nodes.map((node : any) => {
+              if (node.nodeType !== ExpressionNodeType.parameterSeparator) {
+                nodesHelper.nodes.push(node);
+              } else {
+
+                //console.log("execute tree for ", nodes);
+                const value = ExpressionTreeExecute(nodesHelper, values);
+                //console.log("with result", value);
+
+                if (isRangeValue(value)) {
+                  // this shouldn't happen currently 
+                  // .. perhaps later when we support functions with ranges as paramters like vlookup ???
+                  parameters.push(expressionFunctions[node.value](value, values));
+                } else {
+                  parameters.push(value);
+                }
+
+                nodesHelper = {
+                  nodes: [],
+                  nodeType: ExpressionNodeType.expression,
+                  value: 0,
+                };
+              }
+            });
+            let usesRange : boolean = false;
+            if (nodesHelper.nodes.length > 0) {
+              //console.log("execute tree for ", nodes);
+
+              const value = ExpressionTreeExecute(nodesHelper, values);
+              if (isRangeValue(value)) {
+                usesRange = true;
+                currentValue = expressionFunctions[node.value](value, values);
+              } else {
+                parameters.push(value);
+              }
+            }
+            if (!usesRange) {
+              currentValue = expressionFunctions[node.value](...parameters);
+            }
+            //console.log("function", node.value , "parameters" , parameters , "result", currentValue);
+            /*
             const value = ExpressionTreeExecute(nodes, values);
             if (isRangeValue(value)) {
               if (values.values) {
@@ -117,7 +167,8 @@ function ExpressionTreeExecuteForOperator(
             } else {
               currentValue = expressionFunctions[node.value](value);
             }
-          }
+            */
+          
         } else {
           if (isRangeValue(node.value)) {
             currentValue = node.value;
@@ -151,20 +202,19 @@ function ExpressionTreeExecuteForOperator(
           nodeType: ExpressionNodeType.numeric,
           nodes: [],
         };
-
         nodesStack.push(newNode);
       } else if (
         node.nodeType === ExpressionNodeType.operator &&
         currentExpressionNodeType === ExpressionNodeType.expression
       ) {
-        console.log(
-          'unexpected expression node',
-          expressionTree,
-          nodes,
-          nodesStack,
-          currentNode
-        );
-        throw new Error('unexpected expression node');
+        currentOperator = node.value;
+        currentExpressionNodeType = node.nodeType;
+        if (currentNode !== undefined) {
+          nodesStack.push(currentNode);
+        } else {
+          console.log("currentNode is undefined");
+        }
+        nodesStack.push(node);
       } else if (
         (node.nodeType === ExpressionNodeType.operator &&
           currentExpressionNodeType === ExpressionNodeType.alpha) ||
@@ -176,13 +226,16 @@ function ExpressionTreeExecuteForOperator(
 
         nodesStack.push(node);
       } else if (
-        (node.nodeType === ExpressionNodeType.numeric ||
-          node.nodeType === ExpressionNodeType.alpha) &&
+        (node.nodeType === ExpressionNodeType.numeric) &&
         currentExpressionNodeType === ExpressionNodeType.operator
       ) {
+        /*
+ ||
+          node.nodeType === ExpressionNodeType.alpha
+        */
         currentExpressionNodeType = ExpressionNodeType.numeric;
         let valueForExpression = 0;
-        if (node.nodeType === ExpressionNodeType.alpha) {
+        /*if (node.nodeType === ExpressionNodeType.alpha) {
           if (node.nodes.length > 0 && expressionFunctions[node.value]) {
             let nodes: ExpressionNode = {
               nodes: node.nodes,
@@ -201,7 +254,7 @@ function ExpressionTreeExecuteForOperator(
               valueForExpression = Number(values[node.value]) || 0;
             }
           }
-        } else {
+        } else*/ {
           valueForExpression = node.value;
         }
 

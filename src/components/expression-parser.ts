@@ -1,6 +1,6 @@
 import {
   invalidOperatorAfterOperator,
-  invalidCloseTag,
+  //invalidCloseTag,
 } from './expression-resource-strings';
 
 export enum ExpressionState {
@@ -17,6 +17,7 @@ export enum ExpressionNodeType {
   alpha,
   expression,
   parameters,
+  parameterSeparator
 }
 
 export interface ExpressionNode {
@@ -57,6 +58,22 @@ export function ExpressionParser(expression: string) {
       }
 
       if (character === ',') {
+
+          /*
+            concept of function parameters should be handled differently
+            , should be added as special nodetype to nodes list
+            and when executing a function 
+              .. check if nodes contain parameter separator
+
+          */
+         let parameterSeparatorNode = {
+            nodeType: ExpressionNodeType.parameterSeparator,
+            nodes: [],
+            value: 0,
+            parentNode: currentNode,
+          };
+          currentNode.nodes.push(parameterSeparatorNode);
+        /*
         if (
           currentNode.parentNode &&
           currentNode.parentNode.nodeType === ExpressionNodeType.expression
@@ -66,17 +83,19 @@ export function ExpressionParser(expression: string) {
           currentNode = currentNode.parentNode;
         } else {
           currentNode.nodeType = ExpressionNodeType.parameters;
-        }
+        }*/
       }
 
       if ('+-/*^'.indexOf(character) >= 0) {
-        let numericNode = {
+        // TODO : figure out why this is here...
+        /*let numericNode = {
           nodeType: ExpressionNodeType.numeric,
           nodes: [],
           value: 0,
           parentNode: currentNode,
         };
         currentNode.nodes.push(numericNode);
+        */
 
         currentOperator = character;
         expressionState = ExpressionState.operator;
@@ -102,19 +121,29 @@ export function ExpressionParser(expression: string) {
       }
 
       if (character === ')') {
-        if (currentNode.nodeType === ExpressionNodeType.parameters) {
+        /*if (currentNode.nodeType === ExpressionNodeType.parameters) {
           currentNode = currentNode.parentNode as ExpressionNode;
-          expressionState = ExpressionState.empty;
-        } else if (currentNode.nodeType === ExpressionNodeType.expression) {
+          if (currentNode.nodeType === ExpressionNodeType.expression || 
+              currentNode.nodeType === ExpressionNodeType.parameters) {
+            expressionState = ExpressionState.group;
+          } else {
+            expressionState = ExpressionState.empty;
+          }
+        } else if (currentNode.nodeType === ExpressionNodeType.expression) {*/
           currentNode = currentNode.parentNode as ExpressionNode;
-          expressionState = ExpressionState.empty;
-        } else if (
-          currentNode.parentNode &&
+          expressionState = ExpressionState.group;
+        /* } else if ((
+            currentNode.nodeType === ExpressionNodeType.alpha ||
+            currentNode.nodeType === ExpressionNodeType.numeric
+          ) && currentNode.parentNode &&
           currentNode.parentNode.nodeType === ExpressionNodeType.expression
         ) {
+          // if currentnode is alpha or numeric and a ) is found ... then check the parent
+          // and go back to parent
           currentNode = currentNode.parentNode as ExpressionNode;
           expressionState = ExpressionState.empty;
         } else {
+        
           console.log(
             invalidCloseTag,
             currentNode,
@@ -124,7 +153,7 @@ export function ExpressionParser(expression: string) {
             character
           );
           throw new Error(invalidCloseTag);
-        }
+        }*/
       }
 
       if (character === ' ') {
@@ -141,14 +170,17 @@ export function ExpressionParser(expression: string) {
           parentNode: currentNode,
         };
         currentNode.nodes.push(numericNode);
-
+        numericValue = "";
         currentNode = currentNode.parentNode as ExpressionNode;
-
-        if (currentNode.parentNode) {
-          currentNode = currentNode.parentNode as ExpressionNode;
-        }
-
         expressionState = ExpressionState.empty;
+
+        if (currentNode.nodeType === ExpressionNodeType.alpha && 
+            currentNode.parentNode && 
+            currentNode.parentNode.nodeType == ExpressionNodeType.expression
+          ) {
+          currentNode = currentNode.parentNode as ExpressionNode;
+          expressionState = ExpressionState.group;
+        }
       } else if (character === ',') {
         let numericNode = {
           nodeType: ExpressionNodeType.numeric,
@@ -157,7 +189,17 @@ export function ExpressionParser(expression: string) {
           parentNode: currentNode,
         };
         currentNode.nodes.push(numericNode);
-        currentNode.nodeType = ExpressionNodeType.parameters;
+        // TODO : add parameter separator node here
+
+        let parameterSeparatorNode = {
+          nodeType: ExpressionNodeType.parameterSeparator,
+          nodes: [],
+          value: 0,
+          parentNode: currentNode,
+        };
+        currentNode.nodes.push(parameterSeparatorNode);
+
+        //currentNode.nodeType = ExpressionNodeType.parameters;
         expressionState = ExpressionState.empty;
       } else if ('+-/*^'.indexOf(character) >= 0) {
         let numericNode = {
@@ -278,6 +320,14 @@ export function ExpressionParser(expression: string) {
         alphaValue = '';
         currentNode = currentNode.parentNode as ExpressionNode;
         expressionState = ExpressionState.empty;
+
+        if (currentNode.nodeType === ExpressionNodeType.alpha && 
+          currentNode.parentNode && 
+          currentNode.parentNode.nodeType == ExpressionNodeType.expression
+        ) {
+          currentNode = currentNode.parentNode as ExpressionNode;
+          expressionState = ExpressionState.group;
+        }
       } else if (character === ',') {
         let alphaNode = {
           nodeType: ExpressionNodeType.alpha,
@@ -286,7 +336,16 @@ export function ExpressionParser(expression: string) {
           parentNode: currentNode,
         };
         currentNode.nodes.push(alphaNode);
-        currentNode.nodeType = ExpressionNodeType.parameters;
+        // TODO : add parameter separator node here
+        let parameterSeparatorNode = {
+          nodeType: ExpressionNodeType.parameterSeparator,
+          nodes: [],
+          value: 0,
+          parentNode: currentNode,
+        };
+        currentNode.nodes.push(parameterSeparatorNode);
+
+        //currentNode.nodeType = ExpressionNodeType.parameters;
         alphaValue = '';
         expressionState = ExpressionState.empty;
       } else if ('+-/*^'.indexOf(character) >= 0) {

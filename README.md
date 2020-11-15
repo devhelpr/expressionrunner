@@ -2,16 +2,18 @@
 
 Simple expression engine without external dependencies:
 
-- Standard support for the following operators : +,-,*,/,^
+- Standard support for the following operators : ^ / * + - 
 - Support for "()" groups 
 - Support for named variables in expressions
 - Support for custom functions
 - Support for pre-parsing and reusing the expression tree
+- Written in typescript
 - Its faster then JEXL.
 
 ## Getting started
+
 ```bash
-npm add @devhelpr/expressionrunner # or yarn add @devhelpr/expressionrunner
+npm install @devhelpr/expressionrunner --save # or yarn add @devhelpr/expressionrunner
 ```
 
 ```js
