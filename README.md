@@ -2,7 +2,8 @@
 
 Simple expression engine without external dependencies:
 
-- Standard support for the following operators : ^ / * + - 
+- Standard support for the following operators : / * + - % 
+- Support for logic operators : & | ^ > < !
 - Support for "()" groups 
 - Support for named variables in expressions
 - Support for custom functions

@@ -71,8 +71,8 @@ test('calculates 2 * (2+3)', () => {
   expect(executeExpressionTree(tree, {})).toBe(10);
 });
 
-test('calculates 2^3', () => {
-  let tree = createExpressionTree('2^3');
+test('calculates Math.pow(2,3)', () => {
+  let tree = createExpressionTree('Math.pow(2,3)');
   expect(executeExpressionTree(tree, {})).toBe(8);
 });
 
@@ -104,6 +104,7 @@ test('calculates a+b', () => {
 
 test('calculates a+b/a', () => {
   let tree = createExpressionTree('a+b/a');
+  logTree(tree, 0);
   expect(executeExpressionTree(tree, { a: 2, b: 6 })).toBe(5);
 });
 
@@ -132,17 +133,19 @@ test('calculates a+5*(b*a)', () => {
   let tree = createExpressionTree('a+5*(b*a)');
   expect(executeExpressionTree(tree, { a: 2, b: 3 })).toBe(32);
 });
-test('calculates Math.sin((t/100)-Math.sqrt((x-7.5)^2+(y-6)^2))', () => {
+test('calculates Math.sin((t/100)-Math.sqrt(Math.pow(x-7.5,2)+Math.pow(y-6,2)))', () => {
   let tree = createExpressionTree(
-    'Math.sin((t/100)-Math.sqrt((x-7.5)^2+(y-6)^2))'
+    'Math.sin((t/100)-Math.sqrt(Math.pow(x-7.5,2)+Math.pow(y-6,2)))'
   );
   expect(
     Math.floor(executeExpressionTree(tree, { t: 0, x: 0, y: 0, i: 0 }))
   ).toBe(0);
 });
 
-test('calculates Math.sqrt((x-7.5)^2+(y-6)^2)', () => {
-  let tree = createExpressionTree('Math.sqrt((x-7.5)^2+(y-6)^2)');
+test('calculates Math.sqrt(Math.pow(x-7.5,2)+Math.pow(y-6,2))', () => {
+  let tree = createExpressionTree(
+    'Math.sqrt(Math.pow(x-7.5,2)+Math.pow(y-6,2))'
+  );
   expect(
     Math.floor(executeExpressionTree(tree, { t: 0, x: 0, y: 0, i: 0 }))
   ).toBe(9);
@@ -214,4 +217,79 @@ test('calculates with cells and rows', () => {
   expect(
     Math.floor(executeExpressionTree(tree, { ...values, values: grid }))
   ).toBe(48);
+});
+
+test('calculates 1&1', () => {
+  let tree = createExpressionTree('1&1');
+  expect(executeExpressionTree(tree, {})).toBe(1);
+});
+
+test('calculates 1&0', () => {
+  let tree = createExpressionTree('1&0');
+  expect(executeExpressionTree(tree, {})).toBe(0);
+});
+
+test('calculates 1|0', () => {
+  let tree = createExpressionTree('1|0');
+  expect(executeExpressionTree(tree, {})).toBe(1);
+});
+
+test('calculates 0|1', () => {
+  let tree = createExpressionTree('0|1');
+  expect(executeExpressionTree(tree, {})).toBe(1);
+});
+
+test('calculates 0|0', () => {
+  let tree = createExpressionTree('0|0');
+  expect(executeExpressionTree(tree, {})).toBe(0);
+});
+
+test('calculates 1^1', () => {
+  let tree = createExpressionTree('1^1');
+  expect(executeExpressionTree(tree, {})).toBe(0);
+});
+
+test('calculates 1^0', () => {
+  let tree = createExpressionTree('1^0');
+  expect(executeExpressionTree(tree, {})).toBe(1);
+});
+
+test('calculates 0^1', () => {
+  let tree = createExpressionTree('0^1');
+  expect(executeExpressionTree(tree, {})).toBe(1);
+});
+
+test('calculates 5%3', () => {
+  let tree = createExpressionTree('5%3');
+  expect(executeExpressionTree(tree, {})).toBe(2);
+});
+
+test('calculates 27%13', () => {
+  let tree = createExpressionTree('27%13');
+  expect(executeExpressionTree(tree, {})).toBe(1);
+});
+
+test('calculates 27>13', () => {
+  let tree = createExpressionTree('27>13');
+  expect(executeExpressionTree(tree, {})).toBe(1);
+});
+
+test('calculates 1<1000', () => {
+  let tree = createExpressionTree('1<1000');
+  expect(executeExpressionTree(tree, {})).toBe(1);
+});
+
+test('calculates 1>1000', () => {
+  let tree = createExpressionTree('1>1000');
+  expect(executeExpressionTree(tree, {})).toBe(0);
+});
+
+test('calculates !1', () => {
+  let tree = createExpressionTree('!1');
+  expect(executeExpressionTree(tree, {})).toBe(0);
+});
+
+test('calculates !1000>1', () => {
+  let tree = createExpressionTree('!1000>1');
+  expect(executeExpressionTree(tree, {})).toBe(0);
 });

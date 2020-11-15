@@ -29,6 +29,7 @@ export interface ExpressionNode {
 
 let expressionState: ExpressionState = ExpressionState.empty;
 const alphaRegex = new RegExp(/^[a-zA-Z]+$/i);
+const supportedOperators = '+-/*=^&|<>!%';
 
 export function ExpressionParser(expression: string) {
   let numericValue = '';
@@ -67,7 +68,7 @@ export function ExpressionParser(expression: string) {
         currentNode.nodes.push(parameterSeparatorNode);
       }
 
-      if ('+-/*^'.indexOf(character) >= 0) {
+      if (supportedOperators.indexOf(character) >= 0) {
         currentOperator = character;
         expressionState = ExpressionState.operator;
       }
@@ -142,7 +143,7 @@ export function ExpressionParser(expression: string) {
 
         //currentNode.nodeType = ExpressionNodeType.parameters;
         expressionState = ExpressionState.empty;
-      } else if ('+-/*^'.indexOf(character) >= 0) {
+      } else if (supportedOperators.indexOf(character) >= 0) {
         let numericNode = {
           nodeType: ExpressionNodeType.numeric,
           nodes: [],
@@ -212,7 +213,7 @@ export function ExpressionParser(expression: string) {
         currentNode.nodes.push(operatorNode);
         currentOperator = '';
         expressionState = ExpressionState.empty;
-      } else if ('+-/*^'.indexOf(character) >= 0) {
+      } else if (supportedOperators.indexOf(character) >= 0) {
         console.error(
           invalidOperatorAfterOperator,
           rootNode,
@@ -290,7 +291,7 @@ export function ExpressionParser(expression: string) {
         //currentNode.nodeType = ExpressionNodeType.parameters;
         alphaValue = '';
         expressionState = ExpressionState.empty;
-      } else if ('+-/*^'.indexOf(character) >= 0) {
+      } else if (supportedOperators.indexOf(character) >= 0) {
         let alphaNode = {
           nodeType: ExpressionNodeType.alpha,
           nodes: [],
