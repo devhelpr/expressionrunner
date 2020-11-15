@@ -15,12 +15,12 @@ import {
 registerExpressionFunction('sum', (a: number, ...args: number[]) => {
   console.log('sum function', a, args[0]);
   if (isRangeValue(a.toString())) {
-    console.log("sum function userange");
+    console.log('sum function userange');
     try {
       const range = getRangeFromValues((args[0] as any).values, a.toString());
       const valueParameterNames = getRangeValueParameters(a.toString());
       let result = 0;
-      console.log("range", range, valueParameterNames);
+      console.log('range', range, valueParameterNames);
       range.map((value, index) => {
         if ((args[0] as any)[valueParameterNames[index]]) {
           result += Number((args[0] as any)[valueParameterNames[index]]) || 0;
@@ -29,12 +29,12 @@ registerExpressionFunction('sum', (a: number, ...args: number[]) => {
         }
         return true;
       });
-      
+
       return result;
     } catch (err) {
-      console.log("exception in sum" , err);
+      console.log('exception in sum', err);
       return 0;
-    } 
+    }
   } else {
     // todo ... add other arguments as well
     return Number(a) + args[0];
@@ -155,6 +155,7 @@ const logTree = (tree: any, treeIndex: number) => {
       if (node.nodes.length > 0) {
         logTree(node, treeIndex + 1);
       }
+      return null;
     });
   }
 };
@@ -180,20 +181,12 @@ test('basic runExpression with variables', () => {
 });
 
 const convertGridToNamedVariables = (values: any[]) => {
-  let variables : any = {};
-  values.map((rowValues : any, rowIndex : number) => {
+  let variables: any = {};
+  values.map((rowValues: any, rowIndex: number) => {
     if (rowValues) {
-      rowValues.map((cellValue : any, columnIndex : number) => {
+      rowValues.map((cellValue: any, columnIndex: number) => {
         if (cellValue) {
-          /*
-  TODO:
-
-    - check if cell contains reference to namespace (contains a dot)
-    - if so... get the data from the namespace
-
-*/
-
-          if (cellValue === '' || (cellValue != '' && cellValue[0] !== '=')) {
+          if (cellValue === '' || (cellValue !== '' && cellValue[0] !== '=')) {
             let letter = String.fromCharCode((columnIndex % 26) + 65);
             let value = Number(cellValue);
             if (isNaN(value)) {
@@ -202,8 +195,10 @@ const convertGridToNamedVariables = (values: any[]) => {
             variables[letter + (rowIndex + 1)] = value;
           }
         }
+        return null;
       });
     }
+    return null;
   });
   return variables;
 };
@@ -213,15 +208,10 @@ test('calculates with cells and rows', () => {
   //let tree = createExpressionTree('Math.pow(x+2,2)+16');
   //let tree = createExpressionTree('25+16');
   logTree(tree, 0);
-  const grid : any = [[5], [7], [8], [9], [19]];
+  const grid: any = [[5], [7], [8], [9], [19]];
   let values = convertGridToNamedVariables(grid);
   console.log(values);
   expect(
-    Math.floor(
-      executeExpressionTree(
-        tree,
-        {...values, values: grid}
-      )
-    )
+    Math.floor(executeExpressionTree(tree, { ...values, values: grid }))
   ).toBe(48);
 });
