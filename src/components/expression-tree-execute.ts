@@ -479,6 +479,22 @@ function ExpressionTreeExecuteForOperator(
             nodesStack.pop();
           }
         } else if (
+          currentOperator === '==' &&
+          operator.indexOf(currentOperator) >= 0
+        ) {
+          // TODO : add 'skip lint' rule here .. to be able to use == instead of ===
+          currentValue = Number(currentValue === valueForExpression);
+
+          currentNode = {
+            nodeType: ExpressionNodeType.numeric,
+            value: currentValue,
+            nodes: [],
+          };
+          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '==')) {
+            nodesStack.pop();
+          }
+        } else if (
           currentOperator === '*' &&
           operator.indexOf(currentOperator) >= 0
         ) {
@@ -571,7 +587,11 @@ function ExpressionTreeExecute(expressionTree: ExpressionNode, values: any) {
     // .. in the first iteration the variables are replaced
     nodes = ExpressionTreeExecuteForOperator(nodes, [], values);
     nodes = ExpressionTreeExecuteForOperator(nodes, ['!', '~'], values);
-    nodes = ExpressionTreeExecuteForOperator(nodes, ['/', '*', '**'], values);
+    nodes = ExpressionTreeExecuteForOperator(
+      nodes,
+      ['/', '*', '**', '%'],
+      values
+    );
     nodes = ExpressionTreeExecuteForOperator(nodes, ['+', '-'], values);
     nodes = ExpressionTreeExecuteForOperator(
       nodes,
@@ -580,14 +600,10 @@ function ExpressionTreeExecute(expressionTree: ExpressionNode, values: any) {
     );
     nodes = ExpressionTreeExecuteForOperator(
       nodes,
-      ['=', '<', '>', '>=', '<='],
+      ['=', '<', '>', '>=', '<=', '=='],
       values
     );
-    nodes = ExpressionTreeExecuteForOperator(
-      nodes,
-      ['^', '&', '|', '%'],
-      values
-    );
+    nodes = ExpressionTreeExecuteForOperator(nodes, ['^', '&', '|'], values);
     nodes = ExpressionTreeExecuteForOperator(nodes, ['&&', '||'], values);
     if (nodes.nodes.length > 0) {
       return nodes.nodes[0].value;

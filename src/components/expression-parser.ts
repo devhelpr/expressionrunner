@@ -51,6 +51,7 @@ const supportedOperators = [
   '<<',
   '>>>',
   '**',
+  '==',
 ];
 
 export function ExpressionParser(expression: string) {
