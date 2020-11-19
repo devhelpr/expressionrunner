@@ -1,6 +1,7 @@
 import {
   invalidOperatorAfterOperator,
   //invalidCloseTag,
+  stringHasNoEndCharacter,
 } from './expression-resource-strings';
 
 export enum ExpressionState {
@@ -9,6 +10,7 @@ export enum ExpressionState {
   operator,
   alpha,
   group,
+  string,
 }
 
 export enum ExpressionNodeType {
@@ -18,11 +20,13 @@ export enum ExpressionNodeType {
   expression,
   parameters,
   parameterSeparator,
+  string,
 }
 
 export interface ExpressionNode {
   nodeType: ExpressionNodeType;
   value?: any;
+  rawValue?: any;
   nodes: ExpressionNode[];
   parentNode?: ExpressionNode;
 }
@@ -58,6 +62,7 @@ export function ExpressionParser(expression: string) {
   let numericValue = '';
   let currentOperator = '';
   let alphaValue = '';
+  let stringStartEndCharacter = '';
 
   let rootNode: ExpressionNode = {
     nodeType: ExpressionNodeType.expression,
@@ -75,13 +80,15 @@ export function ExpressionParser(expression: string) {
       expressionState === ExpressionState.empty ||
       expressionState === ExpressionState.group
     ) {
-      if ((character >= '0' && character <= '9') || character === '.') {
+      if (character.toString() === '"' || character.toString() === "'") {
+        expressionState = ExpressionState.string;
+        stringStartEndCharacter = character.toString();
+        alphaValue = '';
+      } else if ((character >= '0' && character <= '9') || character === '.') {
         numericValue = character;
         currentOperator = '';
         expressionState = ExpressionState.numeric;
-      }
-
-      if (character === ',') {
+      } else if (character === ',') {
         let parameterSeparatorNode = {
           nodeType: ExpressionNodeType.parameterSeparator,
           nodes: [],
@@ -89,14 +96,10 @@ export function ExpressionParser(expression: string) {
           parentNode: currentNode,
         };
         currentNode.nodes.push(parameterSeparatorNode);
-      }
-
-      if (supportedOperators.indexOf(character) >= 0) {
+      } else if (supportedOperators.indexOf(character) >= 0) {
         currentOperator = character;
         expressionState = ExpressionState.operator;
-      }
-
-      if (character === '(') {
+      } else if (character === '(') {
         expressionState = ExpressionState.group;
 
         let expressionNode = {
@@ -107,15 +110,11 @@ export function ExpressionParser(expression: string) {
         };
         currentNode.nodes.push(expressionNode);
         currentNode = expressionNode;
-      }
-
-      if ((character.toString().match(alphaRegex) || []).length > 0) {
+      } else if ((character.toString().match(alphaRegex) || []).length > 0) {
         alphaValue = character.toString();
         currentOperator = '';
         expressionState = ExpressionState.alpha;
-      }
-
-      if (character === ')') {
+      } else if (character === ')') {
         currentNode = currentNode.parentNode as ExpressionNode;
         expressionState = ExpressionState.group;
       }
@@ -131,6 +130,7 @@ export function ExpressionParser(expression: string) {
           nodeType: ExpressionNodeType.numeric,
           nodes: [],
           value: parseFloat(numericValue),
+          rawValue: numericValue,
           parentNode: currentNode,
         };
         currentNode.nodes.push(numericNode);
@@ -151,6 +151,7 @@ export function ExpressionParser(expression: string) {
           nodeType: ExpressionNodeType.numeric,
           nodes: [],
           value: parseFloat(numericValue),
+          rawValue: numericValue,
           parentNode: currentNode,
         };
         currentNode.nodes.push(numericNode);
@@ -160,6 +161,7 @@ export function ExpressionParser(expression: string) {
           nodeType: ExpressionNodeType.parameterSeparator,
           nodes: [],
           value: 0,
+          rawValue: 0,
           parentNode: currentNode,
         };
         currentNode.nodes.push(parameterSeparatorNode);
@@ -171,6 +173,7 @@ export function ExpressionParser(expression: string) {
           nodeType: ExpressionNodeType.numeric,
           nodes: [],
           value: parseFloat(numericValue),
+          rawValue: numericValue,
           parentNode: currentNode,
         };
         currentNode.nodes.push(numericNode);
@@ -183,7 +186,6 @@ export function ExpressionParser(expression: string) {
     } else if (expressionState === ExpressionState.operator) {
       if (supportedOperators.indexOf(currentOperator + character) >= 0) {
         currentOperator = currentOperator + character;
-        console.log('currentOperator', currentOperator);
       } else if ((character >= '0' && character <= '9') || character === '.') {
         let operatorNode = {
           nodeType: ExpressionNodeType.operator,
@@ -197,6 +199,18 @@ export function ExpressionParser(expression: string) {
         expressionState = ExpressionState.numeric;
 
         currentOperator = '';
+      } else if (character.toString() === '"' || character.toString() === "'") {
+        let operatorNode = {
+          nodeType: ExpressionNodeType.operator,
+          nodes: [],
+          value: currentOperator,
+          parentNode: currentNode,
+        };
+        currentNode.nodes.push(operatorNode);
+
+        expressionState = ExpressionState.string;
+        stringStartEndCharacter = character.toString();
+        alphaValue = '';
       } else if ((character.toString().match(alphaRegex) || []).length > 0) {
         let operatorNode = {
           nodeType: ExpressionNodeType.operator,
@@ -262,6 +276,7 @@ export function ExpressionParser(expression: string) {
           nodeType: ExpressionNodeType.alpha,
           nodes: [],
           value: alphaValue,
+          rawValue: alphaValue,
           parentNode: currentNode,
         };
         currentNode.nodes.push(alphaNode);
@@ -282,6 +297,7 @@ export function ExpressionParser(expression: string) {
           nodeType: ExpressionNodeType.alpha,
           nodes: [],
           value: alphaValue,
+          rawValue: alphaValue,
           parentNode: currentNode,
         };
         currentNode.nodes.push(alphaNode);
@@ -302,6 +318,7 @@ export function ExpressionParser(expression: string) {
           nodeType: ExpressionNodeType.alpha,
           nodes: [],
           value: alphaValue,
+          rawValue: alphaValue,
           parentNode: currentNode,
         };
         currentNode.nodes.push(alphaNode);
@@ -322,6 +339,7 @@ export function ExpressionParser(expression: string) {
           nodeType: ExpressionNodeType.alpha,
           nodes: [],
           value: alphaValue,
+          rawValue: alphaValue,
           parentNode: currentNode,
         };
         currentNode.nodes.push(alphaNode);
@@ -331,6 +349,22 @@ export function ExpressionParser(expression: string) {
         expressionState = ExpressionState.operator;
       } else if (character === ' ') {
         // skip
+      }
+    } else if (expressionState === ExpressionState.string) {
+      if (character === stringStartEndCharacter) {
+        let alphaNode = {
+          nodeType: ExpressionNodeType.string,
+          nodes: [],
+          value: alphaValue,
+          rawValue: alphaValue,
+          parentNode: currentNode,
+        };
+        currentNode.nodes.push(alphaNode);
+        expressionState = ExpressionState.empty;
+        alphaValue = '';
+        stringStartEndCharacter = '';
+      } else {
+        alphaValue += character.toString();
       }
     }
 
@@ -342,6 +376,7 @@ export function ExpressionParser(expression: string) {
       nodeType: ExpressionNodeType.numeric,
       nodes: [],
       value: parseFloat(numericValue),
+      rawValue: numericValue,
       parentNode: currentNode,
     };
     currentNode.nodes.push(numericNode);
@@ -350,6 +385,7 @@ export function ExpressionParser(expression: string) {
       nodeType: ExpressionNodeType.alpha,
       nodes: [],
       value: alphaValue,
+      rawValue: alphaValue,
       parentNode: currentNode,
     };
     currentNode.nodes.push(alphaNode);
@@ -361,6 +397,8 @@ export function ExpressionParser(expression: string) {
       parentNode: currentNode,
     };
     currentNode.nodes.push(operatorNode);
+  } else if (expressionState === ExpressionState.string) {
+    throw new Error(stringHasNoEndCharacter);
   }
 
   numericValue = '';

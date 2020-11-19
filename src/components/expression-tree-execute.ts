@@ -64,6 +64,7 @@ function ExpressionTreeExecuteForOperator(
   if (expressionTree.nodes.length > 0) {
     let currentExpressionNodeType = ExpressionNodeType.expression;
 
+    let currentRawValue: any = undefined;
     let currentValue = 0;
     let currentOperator = '';
 
@@ -77,8 +78,16 @@ function ExpressionTreeExecuteForOperator(
         currentExpressionNodeType === ExpressionNodeType.expression
       ) {
         currentValue = node.value;
+        currentRawValue = node.rawValue;
         currentExpressionNodeType = node.nodeType;
-
+        nodesStack.push(node);
+      } else if (
+        node.nodeType === ExpressionNodeType.string &&
+        currentExpressionNodeType === ExpressionNodeType.expression
+      ) {
+        currentValue = node.value;
+        currentRawValue = node.value;
+        currentExpressionNodeType = node.nodeType;
         nodesStack.push(node);
       } else if (node.nodeType === ExpressionNodeType.alpha) {
         if (node.nodes.length > 0 && expressionFunctions[node.value]) {
@@ -128,12 +137,14 @@ function ExpressionTreeExecuteForOperator(
             if (isRangeValue(value)) {
               usesRange = true;
               currentValue = expressionFunctions[node.value](value, values);
+              currentRawValue = currentValue;
             } else {
               parameters.push(value);
             }
           }
           if (!usesRange) {
             currentValue = expressionFunctions[node.value](...parameters);
+            currentRawValue = currentValue;
           }
           //console.log("function", node.value , "parameters" , parameters , "result", currentValue);
           /*
@@ -151,6 +162,7 @@ function ExpressionTreeExecuteForOperator(
         } else {
           if (isRangeValue(node.value)) {
             currentValue = node.value;
+            currentRawValue = currentValue;
           } else {
             if (node.value.indexOf('.') > 0) {
               currentValue = 0;
@@ -165,19 +177,20 @@ function ExpressionTreeExecuteForOperator(
                     values[splitted[0]]
                   );
                   (nameSpaceCache as any)[splitted[0]] = variables;
-
-                  currentValue = Number(variables[splitted[1]]) || 0;
+                  currentRawValue = variables[splitted[1]];
+                  currentValue = Number(currentRawValue) || 0;
                 }
               }
             } else {
-              currentValue = Number(values[node.value]) || 0;
+              currentRawValue = values[node.value];
+              currentValue = Number(currentRawValue) || 0;
             }
           }
         }
         currentExpressionNodeType = ExpressionNodeType.numeric;
-
         let newNode = {
           value: currentValue,
+          rawValue: currentRawValue,
           nodeType: ExpressionNodeType.numeric,
           nodes: [],
         };
@@ -194,6 +207,8 @@ function ExpressionTreeExecuteForOperator(
         nodesStack.push(node);
       } else if (
         (node.nodeType === ExpressionNodeType.operator &&
+          currentExpressionNodeType === ExpressionNodeType.string) ||
+        (node.nodeType === ExpressionNodeType.operator &&
           currentExpressionNodeType === ExpressionNodeType.alpha) ||
         (node.nodeType === ExpressionNodeType.operator &&
           currentExpressionNodeType === ExpressionNodeType.numeric)
@@ -203,7 +218,8 @@ function ExpressionTreeExecuteForOperator(
 
         nodesStack.push(node);
       } else if (
-        node.nodeType === ExpressionNodeType.numeric &&
+        (node.nodeType === ExpressionNodeType.numeric ||
+          node.nodeType === ExpressionNodeType.string) &&
         currentExpressionNodeType === ExpressionNodeType.operator
       ) {
         currentExpressionNodeType = ExpressionNodeType.numeric;
@@ -482,9 +498,12 @@ function ExpressionTreeExecuteForOperator(
           currentOperator === '==' &&
           operator.indexOf(currentOperator) >= 0
         ) {
-          // TODO : add 'skip lint' rule here .. to be able to use == instead of ===
-          currentValue = Number(currentValue === valueForExpression);
-
+          if (node.nodeType === ExpressionNodeType.string) {
+            // eslint-disable-next-line
+            currentValue = Number(currentRawValue == valueForExpression);
+          } else {
+            currentValue = Number(currentValue === valueForExpression);
+          }
           currentNode = {
             nodeType: ExpressionNodeType.numeric,
             value: currentValue,
@@ -567,8 +586,10 @@ function ExpressionTreeExecute(expressionTree: ExpressionNode, values: any) {
         node.nodeType === ExpressionNodeType.expression &&
         node.nodes.length > 0
       ) {
+        let value = ExpressionTreeExecute(node, values);
         let newNode = {
-          value: ExpressionTreeExecute(node, values),
+          value: value,
+          rawValue: value,
           nodeType: ExpressionNodeType.numeric,
           nodes: [],
         };

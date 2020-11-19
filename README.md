@@ -34,3 +34,21 @@ import { runExpression } from '@devhelpr/expressionrunner';
 const result = runExpression("a * b", {a:9,b:8});
 alert(`result : ${result}`);
 ```
+
+
+## TODO
+
+- Support comparisons with strings (' and ") and boolean values
+	- Support for specific keywords .. true and false
+
+- Improve performance by only running ExpressionTreeExecuteForOperator for operators that are in the expression
+- Refactor ExpressionTreeExecuteForOperator so that the code that executes the actual operator is in its own function and not in a big if statement
+- Convert to Rust/Wasm
+
+- Support for more datatypes : datetime, string, boolean
+- Support for [] arrays
+- Support for multiple expressions separated by ,
+- Support for assignments within expression
+
+- Support for libaries of functions (math ...)
+

@@ -12,6 +12,41 @@ import {
   runExpression,
 } from '../src/index';
 
+const logTree = (tree: any, treeIndex: number) => {
+  console.log(treeIndex, tree);
+  if (tree.nodes && tree.nodes.length > 0) {
+    tree.nodes.map((node: any) => {
+      if (node.nodes.length > 0) {
+        logTree(node, treeIndex + 1);
+      }
+      return null;
+    });
+  }
+};
+
+const convertGridToNamedVariables = (values: any[]) => {
+  let variables: any = {};
+  values.map((rowValues: any, rowIndex: number) => {
+    if (rowValues) {
+      rowValues.map((cellValue: any, columnIndex: number) => {
+        if (cellValue) {
+          if (cellValue === '' || (cellValue !== '' && cellValue[0] !== '=')) {
+            let letter = String.fromCharCode((columnIndex % 26) + 65);
+            let value = Number(cellValue);
+            if (isNaN(value)) {
+              value = cellValue;
+            }
+            variables[letter + (rowIndex + 1)] = value;
+          }
+        }
+        return null;
+      });
+    }
+    return null;
+  });
+  return variables;
+};
+
 registerExpressionFunction('sum', (a: number, ...args: number[]) => {
   console.log('sum function', a, args[0]);
   if (isRangeValue(a.toString())) {
@@ -151,18 +186,6 @@ test('calculates Math.sqrt(Math.pow(x-7.5,2)+Math.pow(y-6,2))', () => {
   ).toBe(9);
 });
 
-const logTree = (tree: any, treeIndex: number) => {
-  console.log(treeIndex, tree);
-  if (tree.nodes && tree.nodes.length > 0) {
-    tree.nodes.map((node: any) => {
-      if (node.nodes.length > 0) {
-        logTree(node, treeIndex + 1);
-      }
-      return null;
-    });
-  }
-};
-
 test('calculates Math.sqrt(Math.pow((x-7.5),2)+Math.pow((y-6),2))', () => {
   let tree = createExpressionTree('Math.sqrt(Math.pow(x+2,2)+Math.pow(y+3,2))');
   //let tree = createExpressionTree('Math.pow(x+2,2)+16');
@@ -183,37 +206,14 @@ test('basic runExpression with variables', () => {
   expect(result).toBe(72);
 });
 
-const convertGridToNamedVariables = (values: any[]) => {
-  let variables: any = {};
-  values.map((rowValues: any, rowIndex: number) => {
-    if (rowValues) {
-      rowValues.map((cellValue: any, columnIndex: number) => {
-        if (cellValue) {
-          if (cellValue === '' || (cellValue !== '' && cellValue[0] !== '=')) {
-            let letter = String.fromCharCode((columnIndex % 26) + 65);
-            let value = Number(cellValue);
-            if (isNaN(value)) {
-              value = cellValue;
-            }
-            variables[letter + (rowIndex + 1)] = value;
-          }
-        }
-        return null;
-      });
-    }
-    return null;
-  });
-  return variables;
-};
-
 test('calculates with cells and rows', () => {
   let tree = createExpressionTree('sum(A1:A5)');
   //let tree = createExpressionTree('Math.pow(x+2,2)+16');
   //let tree = createExpressionTree('25+16');
-  logTree(tree, 0);
+  //logTree(tree, 0);
   const grid: any = [[5], [7], [8], [9], [19]];
   let values = convertGridToNamedVariables(grid);
-  console.log(values);
+  //console.log(values);
   expect(
     Math.floor(executeExpressionTree(tree, { ...values, values: grid }))
   ).toBe(48);
@@ -307,4 +307,16 @@ test('calculates 5>>1', () => {
 test('calculates 3**2', () => {
   let tree = createExpressionTree('3**2');
   expect(executeExpressionTree(tree, {})).toBe(9);
+});
+
+test('compare named Value with string', () => {
+  let tree = createExpressionTree('test=="hello"');
+  logTree(tree, 0);
+  expect(executeExpressionTree(tree, { test: 'hello' })).toBe(1);
+});
+
+test('compare named Value with string', () => {
+  let tree = createExpressionTree('test=="hello"');
+  logTree(tree, 0);
+  expect(executeExpressionTree(tree, { test: 'test' })).toBe(0);
 });
