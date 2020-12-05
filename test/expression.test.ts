@@ -311,12 +311,38 @@ test('calculates 3**2', () => {
 
 test('compare named Value with string', () => {
   let tree = createExpressionTree('test=="hello"');
-  logTree(tree, 0);
   expect(executeExpressionTree(tree, { test: 'hello' })).toBe(1);
 });
 
 test('compare named Value with string', () => {
   let tree = createExpressionTree('test=="hello"');
-  logTree(tree, 0);
   expect(executeExpressionTree(tree, { test: 'test' })).toBe(0);
+});
+
+test('return string', () => {
+  let tree = createExpressionTree('"hello"');
+  logTree(tree, 0);
+  expect(executeExpressionTree(tree, {})).toBe('hello');
+});
+
+test('compare 2 properties which are not equal', () => {
+  let tree = createExpressionTree('test1 == test2');
+  logTree(tree, 0);
+  expect(
+    executeExpressionTree(tree, {
+      test1: 'abc',
+      test2: 'def',
+    })
+  ).toBe(0);
+});
+
+test('compare 2 properties which are equal', () => {
+  let tree = createExpressionTree('test1 == test2');
+  logTree(tree, 0);
+  expect(
+    executeExpressionTree(tree, {
+      test1: 'abc',
+      test2: 'abc',
+    })
+  ).toBe(1);
 });

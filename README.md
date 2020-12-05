@@ -46,7 +46,7 @@ alert(`result : ${result}`);
 - Convert to Rust/Wasm
 
 - Support for more datatypes : datetime, string, boolean
-- Support for [] arrays
+- Support for [] arrays and "in" keyword
 - Support for multiple expressions separated by ,
 - Support for assignments within expression
 

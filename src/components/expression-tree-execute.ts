@@ -50,7 +50,8 @@ function isLastNodeOfOperatorOrValue(
       (lastNode.nodeType === ExpressionNodeType.operator &&
         lastNode.value === operator) ||
       lastNode.nodeType === ExpressionNodeType.numeric ||
-      lastNode.nodeType === ExpressionNodeType.alpha
+      lastNode.nodeType === ExpressionNodeType.alpha ||
+      lastNode.nodeType === ExpressionNodeType.string
     );
   }
   return false;
@@ -187,11 +188,17 @@ function ExpressionTreeExecuteForOperator(
             }
           }
         }
-        currentExpressionNodeType = ExpressionNodeType.numeric;
+
+        if (typeof currentRawValue == 'string') {
+          currentExpressionNodeType = ExpressionNodeType.string;
+          (currentValue as any) = currentRawValue;
+        } else {
+          currentExpressionNodeType = ExpressionNodeType.numeric;
+        }
         let newNode = {
           value: currentValue,
           rawValue: currentRawValue,
-          nodeType: ExpressionNodeType.numeric,
+          nodeType: currentExpressionNodeType,
           nodes: [],
         };
         nodesStack.push(newNode);
