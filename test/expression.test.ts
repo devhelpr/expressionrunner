@@ -88,6 +88,10 @@ registerExpressionFunction('Math.pow', (a: number, ...args: number[]) => {
   return Math.pow(a, args[0]);
 });
 
+registerExpressionFunction('hypot', (a: number, ...args: number[]) => {
+  return Math.hypot(a, args[0]);
+});
+
 registerExpressionFunction('Math.floor', (a: number) => {
   return Math.floor(a);
 });
@@ -345,4 +349,41 @@ test('compare 2 properties which are equal', () => {
       test2: 'abc',
     })
   ).toBe(1);
+});
+
+test('compare 2 empty properties which are equal', () => {
+  let tree = createExpressionTree('test1 == test2');
+  logTree(tree, 0);
+  expect(
+    executeExpressionTree(tree, {
+      test1: '',
+      test2: '',
+    })
+  ).toBe(1);
+});
+
+test('compare 2 properties where one is empty and the other not', () => {
+  let tree = createExpressionTree('test1 == test2');
+  logTree(tree, 0);
+  expect(
+    executeExpressionTree(tree, {
+      test1: 'abc',
+      test2: '',
+    })
+  ).toBe(0);
+});
+
+test('run 8*t/1000%13 - hypot(x-7.5, y-7.5)', () => {
+  let tree = createExpressionTree('8*t/1000%13 - hypot(x-7.5, y-7.5)');
+  logTree(tree, 0);
+  expect(
+    Math.floor(
+      executeExpressionTree(tree, {
+        x: 1,
+        y: 2,
+        t: 1,
+        i: 0,
+      })
+    )
+  ).toBe(-9);
 });

@@ -1,4 +1,7 @@
-import { createExpressionTree } from './components/expression-parser';
+import {
+  createExpressionTree,
+  ExpressionNode,
+} from './components/expression-parser';
 
 import {
   clearExpressionFunctions,
@@ -32,4 +35,5 @@ export {
   getRangeValueParameters,
   registerExpressionFunction,
   runExpression,
+  ExpressionNode,
 };
