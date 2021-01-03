@@ -14,9 +14,10 @@ import {
 
 import { JustADate } from '../src/utils/date-helper';
 
-const logTree = (tree: any, treeIndex: number) => {
-  return;
-  /*console.log(treeIndex, tree);
+//const logTree = (tree: any, treeIndex: number) => {
+//return;
+
+/*console.log(treeIndex, tree);
   if (tree.nodes && tree.nodes.length > 0) {
     tree.nodes.map((node: any) => {
       if (node.nodes.length > 0) {
@@ -26,7 +27,7 @@ const logTree = (tree: any, treeIndex: number) => {
     });
   }
   */
-};
+//};
 
 const convertGridToNamedVariables = (values: any[]) => {
   let variables: any = {};
@@ -151,7 +152,7 @@ test('calculates a+b', () => {
 
 test('calculates a+b/a', () => {
   let tree = createExpressionTree('a+b/a');
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(executeExpressionTree(tree, { a: 2, b: 6 })).toBe(5);
 });
 
@@ -333,13 +334,13 @@ test('compare named Value with string', () => {
 
 test('return string', () => {
   let tree = createExpressionTree('"hello"');
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(executeExpressionTree(tree, {})).toBe('hello');
 });
 
 test('compare 2 properties which are not equal', () => {
   let tree = createExpressionTree('test1 == test2');
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(
     executeExpressionTree(tree, {
       test1: 'abc',
@@ -350,7 +351,7 @@ test('compare 2 properties which are not equal', () => {
 
 test('compare 2 properties which are equal', () => {
   let tree = createExpressionTree('test1 == test2');
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(
     executeExpressionTree(tree, {
       test1: 'abc',
@@ -361,7 +362,7 @@ test('compare 2 properties which are equal', () => {
 
 test('compare 2 empty properties which are equal', () => {
   let tree = createExpressionTree('test1 == test2');
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(
     executeExpressionTree(tree, {
       test1: '',
@@ -372,7 +373,7 @@ test('compare 2 empty properties which are equal', () => {
 
 test('compare 2 properties where one is empty and the other not', () => {
   let tree = createExpressionTree('test1 == test2');
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(
     executeExpressionTree(tree, {
       test1: 'abc',
@@ -383,7 +384,7 @@ test('compare 2 properties where one is empty and the other not', () => {
 
 test('run 8*t/1000%13 - hypot(x-7.5, y-7.5)', () => {
   let tree = createExpressionTree('8*t/1000%13 - hypot(x-7.5, y-7.5)');
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(
     Math.floor(
       executeExpressionTree(tree, {
@@ -398,7 +399,7 @@ test('run 8*t/1000%13 - hypot(x-7.5, y-7.5)', () => {
 
 test('run true', () => {
   let tree = createExpressionTree('true');
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(executeExpressionTree(tree, {})).toBe(true);
 });
 
@@ -440,7 +441,7 @@ test('run date now', () => {
   let tree = createExpressionTree('date.now()');
   let dateReturned = executeExpressionTree(tree, {});
   console.log('dateNow dateReturned', dateString, dateReturned);
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(dateReturned).toStrictEqual(dateString);
 });
 
@@ -454,7 +455,7 @@ test('run date set', () => {
   let tree = createExpressionTree('date("2021-01-01")');
   let dateReturned = executeExpressionTree(tree, {});
   console.log('dateString dateReturned', dateString, dateReturned);
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(dateReturned).toStrictEqual(dateString);
 });
 
@@ -468,7 +469,7 @@ test('add 2 days', () => {
   let tree = createExpressionTree('date.addDays("2021-01-31",2)');
   let dateReturned = executeExpressionTree(tree, {});
   console.log('dateString dateReturned', dateString, dateReturned);
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(dateReturned).toStrictEqual(dateString);
 });
 
@@ -482,7 +483,7 @@ test('subtract 2 days', () => {
   let tree = createExpressionTree('date.addDays("2021-01-31",-2)');
   let dateReturned = executeExpressionTree(tree, {});
   console.log('dateString dateReturned', dateString, dateReturned);
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(dateReturned).toStrictEqual(dateString);
 });
 
@@ -497,7 +498,7 @@ test('add 2 days to date.now', () => {
   let dateReturned = executeExpressionTree(tree, {});
   console.log('add 2 days to date.now', dateString, dateReturned);
 
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(dateReturned).toStrictEqual(dateString);
 });
 
@@ -512,7 +513,7 @@ test('add 3 months to date.now', () => {
   let dateReturned = executeExpressionTree(tree, {});
   console.log('add 3 months to date.now', dateString, dateReturned);
 
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(dateReturned).toStrictEqual(dateString);
 });
 
@@ -527,7 +528,7 @@ test('add 3 years to date.now', () => {
   let dateReturned = executeExpressionTree(tree, {});
   console.log('add 3 years to date.now', dateString, dateReturned);
 
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(dateReturned).toStrictEqual(dateString);
 });
 
@@ -541,13 +542,13 @@ test('diff between date.now', () => {
   let resultReturned = executeExpressionTree(tree, {});
   console.log('difference between two dates', result, resultReturned);
 
-  logTree(tree, 0);
+  //logTree(tree, 0);
   expect(resultReturned).toStrictEqual(result);
 });
 
 test('Math.add(Math.PI(), 5)', () => {
   let tree = createExpressionTree('Math.add(Math.PI(),5)');
-  logTree(tree, 0);
+  //logTree(tree, 0);
 
   let result = Math.floor(executeExpressionTree(tree, {}));
   expect(result).toStrictEqual(8);
