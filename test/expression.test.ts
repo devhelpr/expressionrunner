@@ -12,8 +12,11 @@ import {
   runExpression,
 } from '../src/index';
 
+import { JustADate } from '../src/utils/date-helper';
+
 const logTree = (tree: any, treeIndex: number) => {
-  console.log(treeIndex, tree);
+  return;
+  /*console.log(treeIndex, tree);
   if (tree.nodes && tree.nodes.length > 0) {
     tree.nodes.map((node: any) => {
       if (node.nodes.length > 0) {
@@ -22,6 +25,7 @@ const logTree = (tree: any, treeIndex: number) => {
       return null;
     });
   }
+  */
 };
 
 const convertGridToNamedVariables = (values: any[]) => {
@@ -98,6 +102,10 @@ registerExpressionFunction('Math.floor', (a: number) => {
 
 registerExpressionFunction('Math.sqrt', (a: number) => {
   return Math.sqrt(a);
+});
+
+registerExpressionFunction('Math.add', (a: number, ...args: number[]) => {
+  return a + args[0];
 });
 
 test('adds 2 and 3', () => {
@@ -386,4 +394,161 @@ test('run 8*t/1000%13 - hypot(x-7.5, y-7.5)', () => {
       })
     )
   ).toBe(-9);
+});
+
+test('run true', () => {
+  let tree = createExpressionTree('true');
+  logTree(tree, 0);
+  expect(executeExpressionTree(tree, {})).toBe(true);
+});
+
+test('run date now', () => {
+  let dateNow = JustADate();
+  //let dateUTC = new Date(Date.UTC(dateNow.getUTCFullYear(), dateNow.getUTCMonth() , dateNow.getUTCDate()))
+  //dateUTC.setHours(0,0,0,0);
+
+  const dateString = dateNow.toISOString();
+
+  //  expressions that should work:
+
+  //  - date.now() + "2d"
+  //    add 2 days
+  //  - date.now() + "2m"
+  //    add 2 months
+  //  - date.now() - "2y"
+  //    add 2 years
+  //  - date.now() - "2d"
+  //    subtract 2 days
+
+  //  - date.now() + date("0002:05:10")
+  //      (0002:05:10 means 2 years 5 months and 10 days)
+
+  //  - date.now() === date("2020-12-25")
+  //      result is true if they match
+
+  //  - date.now() - date("1973-06-13")
+  //      result is date string representing your age
+
+  // - date("2020-12-05") - date("1973-06-13")
+  //      result is difference in date string format
+
+  //  alternative approach:
+
+  //  date.addDays("date", days)
+  //  date.addDays(date.now(), days)
+
+  let tree = createExpressionTree('date.now()');
+  let dateReturned = executeExpressionTree(tree, {});
+  console.log('dateNow dateReturned', dateString, dateReturned);
+  logTree(tree, 0);
+  expect(dateReturned).toStrictEqual(dateString);
+});
+
+test('run date set', () => {
+  let dateSet = JustADate('2021-01-01');
+  //let dateUTC = new Date(Date.UTC(dateNow.getUTCFullYear(), dateNow.getUTCMonth() , dateNow.getUTCDate()))
+  //dateUTC.setHours(0,0,0,0);
+
+  const dateString = dateSet.toISOString();
+
+  let tree = createExpressionTree('date("2021-01-01")');
+  let dateReturned = executeExpressionTree(tree, {});
+  console.log('dateString dateReturned', dateString, dateReturned);
+  logTree(tree, 0);
+  expect(dateReturned).toStrictEqual(dateString);
+});
+
+test('add 2 days', () => {
+  let dateSet = JustADate('2021-02-02');
+  //let dateUTC = new Date(Date.UTC(dateNow.getUTCFullYear(), dateNow.getUTCMonth() , dateNow.getUTCDate()))
+  //dateUTC.setHours(0,0,0,0);
+  //dateSet.addDays(2);
+  const dateString = dateSet.toISOString();
+
+  let tree = createExpressionTree('date.addDays("2021-01-31",2)');
+  let dateReturned = executeExpressionTree(tree, {});
+  console.log('dateString dateReturned', dateString, dateReturned);
+  logTree(tree, 0);
+  expect(dateReturned).toStrictEqual(dateString);
+});
+
+test('subtract 2 days', () => {
+  let dateSet = JustADate('2021-01-29');
+  //let dateUTC = new Date(Date.UTC(dateNow.getUTCFullYear(), dateNow.getUTCMonth() , dateNow.getUTCDate()))
+  //dateUTC.setHours(0,0,0,0);
+  //dateSet.addDays(2);
+  const dateString = dateSet.toISOString();
+
+  let tree = createExpressionTree('date.addDays("2021-01-31",-2)');
+  let dateReturned = executeExpressionTree(tree, {});
+  console.log('dateString dateReturned', dateString, dateReturned);
+  logTree(tree, 0);
+  expect(dateReturned).toStrictEqual(dateString);
+});
+
+test('add 2 days to date.now', () => {
+  let dateSet = JustADate();
+  //let dateUTC = new Date(Date.UTC(dateNow.getUTCFullYear(), dateNow.getUTCMonth() , dateNow.getUTCDate()))
+  //dateUTC.setHours(0,0,0,0);
+  dateSet.addDays(2);
+  const dateString = dateSet.toISOString();
+
+  let tree = createExpressionTree('date.addDays(date.now() , 2)');
+  let dateReturned = executeExpressionTree(tree, {});
+  console.log('add 2 days to date.now', dateString, dateReturned);
+
+  logTree(tree, 0);
+  expect(dateReturned).toStrictEqual(dateString);
+});
+
+test('add 3 months to date.now', () => {
+  let dateSet = JustADate();
+  //let dateUTC = new Date(Date.UTC(dateNow.getUTCFullYear(), dateNow.getUTCMonth() , dateNow.getUTCDate()))
+  //dateUTC.setHours(0,0,0,0);
+  dateSet.addMonths(3);
+  const dateString = dateSet.toISOString();
+
+  let tree = createExpressionTree('date.addMonths(date.now() , 3)');
+  let dateReturned = executeExpressionTree(tree, {});
+  console.log('add 3 months to date.now', dateString, dateReturned);
+
+  logTree(tree, 0);
+  expect(dateReturned).toStrictEqual(dateString);
+});
+
+test('add 3 years to date.now', () => {
+  let dateSet = JustADate();
+  //let dateUTC = new Date(Date.UTC(dateNow.getUTCFullYear(), dateNow.getUTCMonth() , dateNow.getUTCDate()))
+  //dateUTC.setHours(0,0,0,0);
+  dateSet.addYears(3);
+  const dateString = dateSet.toISOString();
+
+  let tree = createExpressionTree('date.addYears(date.now() , 3)');
+  let dateReturned = executeExpressionTree(tree, {});
+  console.log('add 3 years to date.now', dateString, dateReturned);
+
+  logTree(tree, 0);
+  expect(dateReturned).toStrictEqual(dateString);
+});
+
+test('diff between date.now', () => {
+  let dateSet = JustADate();
+  //let dateUTC = new Date(Date.UTC(dateNow.getUTCFullYear(), dateNow.getUTCMonth() , dateNow.getUTCDate()))
+  //dateUTC.setHours(0,0,0,0);
+  const result = dateSet.diffYears(JustADate('1973-06-13'));
+
+  let tree = createExpressionTree('date.diffYears(date.now(), "1973-06-13")');
+  let resultReturned = executeExpressionTree(tree, {});
+  console.log('difference between two dates', result, resultReturned);
+
+  logTree(tree, 0);
+  expect(resultReturned).toStrictEqual(result);
+});
+
+test('Math.add(Math.PI(), 5)', () => {
+  let tree = createExpressionTree('Math.add(Math.PI(),5)');
+  logTree(tree, 0);
+
+  let result = Math.floor(executeExpressionTree(tree, {}));
+  expect(result).toStrictEqual(8);
 });

@@ -11,6 +11,7 @@ export enum ExpressionState {
   alpha,
   group,
   string,
+  parameterGroup,
 }
 
 export enum ExpressionNodeType {
@@ -78,7 +79,8 @@ export function ExpressionParser(expression: string) {
     character = expression.charAt(index);
     if (
       expressionState === ExpressionState.empty ||
-      expressionState === ExpressionState.group
+      expressionState === ExpressionState.group ||
+      expressionState === ExpressionState.parameterGroup
     ) {
       if (character.toString() === '"' || character.toString() === "'") {
         expressionState = ExpressionState.string;
@@ -116,7 +118,16 @@ export function ExpressionParser(expression: string) {
         expressionState = ExpressionState.alpha;
       } else if (character === ')') {
         currentNode = currentNode.parentNode as ExpressionNode;
-        expressionState = ExpressionState.group;
+        if (expressionState === ExpressionState.parameterGroup) {
+          if (
+            currentNode.nodeType === ExpressionNodeType.alpha &&
+            currentNode.parentNode
+          ) {
+            currentNode = currentNode.parentNode as ExpressionNode;
+          }
+        } else {
+          expressionState = ExpressionState.group;
+        }
       }
 
       if (character === ' ') {
@@ -282,7 +293,7 @@ export function ExpressionParser(expression: string) {
         currentNode.nodes.push(alphaNode);
         alphaValue = '';
 
-        expressionState = ExpressionState.group;
+        expressionState = ExpressionState.parameterGroup;
 
         let expressionNode = {
           nodeType: ExpressionNodeType.expression,

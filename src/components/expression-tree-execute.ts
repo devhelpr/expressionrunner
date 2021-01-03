@@ -1,5 +1,10 @@
 import { ExpressionNode, ExpressionNodeType } from './expression-parser';
 import {
+  getFunction,
+  getKeyword,
+  doesKeywordFunctionExist,
+} from './expression-keywords';
+import {
   isRangeValue,
   convertGridToNamedVariables,
 } from '../utils/grid-values';
@@ -91,7 +96,61 @@ function ExpressionTreeExecuteForOperator(
         currentExpressionNodeType = node.nodeType;
         nodesStack.push(node);
       } else if (node.nodeType === ExpressionNodeType.alpha) {
-        if (node.nodes.length > 0 && expressionFunctions[node.value]) {
+        if (getKeyword(node.value)) {
+          const keywordValue = getKeyword(node.value);
+          let newNode = {
+            value: keywordValue,
+            rawValue: keywordValue,
+            nodeType: ExpressionNodeType.numeric,
+            nodes: [],
+          };
+          nodesStack.push(newNode);
+        } else if (doesKeywordFunctionExist(node.value)) {
+          let parameters: any[] = [];
+
+          let nodesHelper: ExpressionNode = {
+            nodes: [],
+            nodeType: ExpressionNodeType.expression,
+            value: 0,
+          };
+          let nodeForParameterExtraction = node;
+          if (
+            node.nodes.length === 1 &&
+            node.nodes[0].nodeType === ExpressionNodeType.expression
+          ) {
+            nodeForParameterExtraction = node.nodes[0];
+          }
+          nodeForParameterExtraction.nodes.map((node: any) => {
+            if (node.nodeType !== ExpressionNodeType.parameterSeparator) {
+              nodesHelper.nodes.push(node);
+            } else {
+              const value = ExpressionTreeExecute(nodesHelper, values);
+
+              parameters.push(value);
+
+              nodesHelper = {
+                nodes: [],
+                nodeType: ExpressionNodeType.expression,
+                value: 0,
+              };
+            }
+            return null;
+          });
+
+          if (nodesHelper.nodes.length > 0) {
+            const value = ExpressionTreeExecute(nodesHelper, values);
+            parameters.push(value);
+          }
+          //console.log("keyword func",node.value, parameters, nodeForParameterExtraction);
+          const functionReturnValue = getFunction(node.value, ...parameters);
+          let newNode = {
+            value: functionReturnValue,
+            rawValue: functionReturnValue,
+            nodeType: ExpressionNodeType.string,
+            nodes: [],
+          };
+          nodesStack.push(newNode);
+        } else if (node.nodes.length > 0 && expressionFunctions[node.value]) {
           let parameters: any[] = [];
 
           let nodesHelper: ExpressionNode = {
