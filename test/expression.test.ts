@@ -14,10 +14,11 @@ import {
 
 import { JustADate } from '../src/utils/date-helper';
 
-//const logTree = (tree: any, treeIndex: number) => {
-//return;
+/*
+const logTree = (tree: any, treeIndex: number) => {
+  //return;
 
-/*console.log(treeIndex, tree);
+  console.log(treeIndex, tree);
   if (tree.nodes && tree.nodes.length > 0) {
     tree.nodes.map((node: any) => {
       if (node.nodes.length > 0) {
@@ -26,8 +27,8 @@ import { JustADate } from '../src/utils/date-helper';
       return null;
     });
   }
-  */
-//};
+};
+*/
 
 const convertGridToNamedVariables = (values: any[]) => {
   let variables: any = {};
@@ -544,6 +545,74 @@ test('diff between date.now', () => {
 
   //logTree(tree, 0);
   expect(resultReturned).toStrictEqual(result);
+});
+
+test('compare dates', () => {
+  let tree = createExpressionTree('date.compare("1973-06-13", date.now())');
+  let resultReturned = executeExpressionTree(tree, {});
+  console.log('compare two dates', resultReturned);
+  //logTree(tree, 0);
+  expect(resultReturned).toBe(-1);
+});
+
+test('compare dates with expression approach 1', () => {
+  let tree = createExpressionTree(
+    'date.compare("1973-06-13", date.now()) == (-1)'
+  );
+  let resultReturned = executeExpressionTree(tree, {});
+  console.log('compare two dates', resultReturned);
+  //logTree(tree, 0);
+  expect(resultReturned).toBe(1);
+});
+
+test('compare dates with expression approach 2', () => {
+  let tree = createExpressionTree('date.compare("1973-06-13", date.now()) < 0');
+  let resultReturned = executeExpressionTree(tree, {});
+  console.log('compare two dates', resultReturned);
+  //logTree(tree, 0);
+  expect(resultReturned).toBe(1);
+});
+
+test('compare dates with expression bigger', () => {
+  let tree = createExpressionTree(
+    'date.compare("2022-01-01", "1973-06-13") > 0'
+  );
+  let resultReturned = executeExpressionTree(tree, {});
+  console.log('compare two dates bigger', resultReturned);
+  //logTree(tree, 0);
+  expect(resultReturned).toBe(1);
+});
+
+test('compare dates with expression bigger 2', () => {
+  let tree = createExpressionTree('date.compare(date.now(), "1973-06-13") > 0');
+  let resultReturned = executeExpressionTree(tree, {});
+  console.log('compare two dates bigger', resultReturned);
+  //logTree(tree, 0);
+  expect(resultReturned).toBe(1);
+});
+
+test('compare dates equal with expression', () => {
+  let tree = createExpressionTree('date.compare(date.now(), date.now()) == 0');
+  let resultReturned = executeExpressionTree(tree, {});
+  console.log('compare two dates equal', resultReturned);
+  //logTree(tree, 0);
+  expect(resultReturned).toBe(1);
+});
+
+test('compare function results', () => {
+  let tree = createExpressionTree('Math.floor(1) < Math.floor(2)');
+  let resultReturned = executeExpressionTree(tree, {});
+  console.log('compare two function results', resultReturned);
+  //logTree(tree, 0);
+  expect(resultReturned).toBe(1);
+});
+
+test('compare date strings', () => {
+  let tree = createExpressionTree('"1973-06-13" < "2021-01-01"');
+  let resultReturned = executeExpressionTree(tree, {});
+  console.log('compare two function results', resultReturned);
+  //logTree(tree, 0);
+  expect(resultReturned).toBe(1);
 });
 
 test('Math.add(Math.PI(), 5)', () => {

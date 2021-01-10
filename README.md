@@ -10,8 +10,8 @@ Simple expression engine without external dependencies:
 - Support for named variables in expressions
 - Support for custom functions
 - Support for pre-parsing and reusing the expression tree
+- Support for dates using special keyword-functions
 - Written in typescript
-- Its faster then JEXL.
 
 ## Getting started
 
@@ -48,7 +48,7 @@ alert(`result : ${result}`);
 - Support for more datatypes : datetime, string, boolean
 - Support for [] arrays and "in" keyword
 - Support for multiple expressions separated by ,
-- Support for assignments within expression
+- Support for assignments within expression ?
 
 - Support for libaries of functions (math ...)
 

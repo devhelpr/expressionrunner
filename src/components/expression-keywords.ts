@@ -21,6 +21,7 @@ export const getKeyword = (name: string) => {
 
 const keywordFunctions = [
   'date.now',
+  'date.compare',
   'date',
   'date.addDays',
   'date.addMonths',
@@ -39,6 +40,27 @@ export const getFunction = (name: string, ...args: any[]) => {
   if (name === 'date.now') {
     let dateNow = JustADate(new Date());
     return dateNow.toISOString();
+  } else if (name === 'date.compare') {
+    console.log('date.compare', args.length, args);
+    if (args.length >= 2) {
+      let date1 = JustADate(new Date(args[0])).toISOString();
+      let date2 = JustADate(new Date(args[1])).toISOString();
+      console.log(
+        'date.compare',
+        date1,
+        date2,
+        date1 === date2,
+        date1 < date2,
+        date1 > date2
+      );
+      if (date1 === date2) {
+        return 0;
+      } else if (date1 < date2) {
+        return -1;
+      } else {
+        return 1;
+      }
+    }
   } else if (name === 'date' && args.length > 0) {
     let dateCreated = JustADate(args[0]);
     return dateCreated.toISOString();

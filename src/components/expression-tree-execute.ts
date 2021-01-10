@@ -81,7 +81,8 @@ function ExpressionTreeExecuteForOperator(
     expressionTree.nodes.map(node => {
       if (
         node.nodeType === ExpressionNodeType.numeric &&
-        currentExpressionNodeType === ExpressionNodeType.expression
+        (currentExpressionNodeType === ExpressionNodeType.expression ||
+          currentExpressionNodeType === ExpressionNodeType.parameterGroup)
       ) {
         currentValue = node.value;
         currentRawValue = node.rawValue;
@@ -89,7 +90,8 @@ function ExpressionTreeExecuteForOperator(
         nodesStack.push(node);
       } else if (
         node.nodeType === ExpressionNodeType.string &&
-        currentExpressionNodeType === ExpressionNodeType.expression
+        (currentExpressionNodeType === ExpressionNodeType.expression ||
+          currentExpressionNodeType === ExpressionNodeType.parameterGroup)
       ) {
         currentValue = node.value;
         currentRawValue = node.value;
@@ -116,7 +118,8 @@ function ExpressionTreeExecuteForOperator(
           let nodeForParameterExtraction = node;
           if (
             node.nodes.length === 1 &&
-            node.nodes[0].nodeType === ExpressionNodeType.expression
+            (node.nodes[0].nodeType === ExpressionNodeType.expression ||
+              node.nodes[0].nodeType === ExpressionNodeType.parameterGroup)
           ) {
             nodeForParameterExtraction = node.nodes[0];
           }
@@ -143,10 +146,19 @@ function ExpressionTreeExecuteForOperator(
           }
           //console.log("keyword func",node.value, parameters, nodeForParameterExtraction);
           const functionReturnValue = getFunction(node.value, ...parameters);
+          console.log(
+            'functionReturnValue',
+            node.value,
+            typeof functionReturnValue,
+            functionReturnValue
+          );
           let newNode = {
             value: functionReturnValue,
             rawValue: functionReturnValue,
-            nodeType: ExpressionNodeType.string,
+            nodeType:
+              typeof functionReturnValue == 'number'
+                ? ExpressionNodeType.numeric
+                : ExpressionNodeType.string,
             nodes: [],
           };
           nodesStack.push(newNode);
@@ -161,7 +173,8 @@ function ExpressionTreeExecuteForOperator(
           let nodeForParameterExtraction = node;
           if (
             node.nodes.length === 1 &&
-            node.nodes[0].nodeType === ExpressionNodeType.expression
+            (node.nodes[0].nodeType === ExpressionNodeType.expression ||
+              node.nodes[0].nodeType === ExpressionNodeType.parameterGroup)
           ) {
             nodeForParameterExtraction = node.nodes[0];
           }
@@ -263,7 +276,8 @@ function ExpressionTreeExecuteForOperator(
         nodesStack.push(newNode);
       } else if (
         node.nodeType === ExpressionNodeType.operator &&
-        currentExpressionNodeType === ExpressionNodeType.expression
+        (currentExpressionNodeType === ExpressionNodeType.expression ||
+          currentExpressionNodeType === ExpressionNodeType.parameterGroup)
       ) {
         currentOperator = node.value;
         currentExpressionNodeType = node.nodeType;
@@ -564,12 +578,20 @@ function ExpressionTreeExecuteForOperator(
           currentOperator === '==' &&
           operator.indexOf(currentOperator) >= 0
         ) {
+          console.log(
+            'compare == ',
+            node.nodeType,
+            currentValue,
+            valueForExpression
+          );
+
           if (node.nodeType === ExpressionNodeType.string) {
             // eslint-disable-next-line
             currentValue = Number(currentRawValue == valueForExpression);
           } else {
             currentValue = Number(currentValue === valueForExpression);
           }
+
           currentNode = {
             nodeType: ExpressionNodeType.numeric,
             value: currentValue,
@@ -649,7 +671,8 @@ function ExpressionTreeExecute(expressionTree: ExpressionNode, values: any) {
   if (expressionTree.nodes.length > 0) {
     let nodeList: ExpressionNode[] = expressionTree.nodes.map(node => {
       if (
-        node.nodeType === ExpressionNodeType.expression &&
+        (node.nodeType === ExpressionNodeType.parameterGroup ||
+          node.nodeType === ExpressionNodeType.expression) &&
         node.nodes.length > 0
       ) {
         let value = ExpressionTreeExecute(node, values);
@@ -736,6 +759,7 @@ export function extractValueParametersFromExpressionTree(
   } else if (
     tree &&
     (tree.nodeType === ExpressionNodeType.expression ||
+      tree.nodeType === ExpressionNodeType.parameterGroup ||
       tree.nodeType === ExpressionNodeType.parameters)
   ) {
     return extractDeeper();

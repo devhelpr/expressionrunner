@@ -22,6 +22,7 @@ export enum ExpressionNodeType {
   parameters,
   parameterSeparator,
   string,
+  parameterGroup,
 }
 
 export interface ExpressionNode {
@@ -117,8 +118,9 @@ export function ExpressionParser(expression: string) {
         currentOperator = '';
         expressionState = ExpressionState.alpha;
       } else if (character === ')') {
-        currentNode = currentNode.parentNode as ExpressionNode;
-        if (expressionState === ExpressionState.parameterGroup) {
+        if (currentNode.nodeType === ExpressionNodeType.parameterGroup) {
+          currentNode = currentNode.parentNode as ExpressionNode;
+          expressionState = ExpressionState.parameterGroup;
           if (
             currentNode.nodeType === ExpressionNodeType.alpha &&
             currentNode.parentNode
@@ -126,7 +128,18 @@ export function ExpressionParser(expression: string) {
             currentNode = currentNode.parentNode as ExpressionNode;
           }
         } else {
-          expressionState = ExpressionState.group;
+          currentNode = currentNode.parentNode as ExpressionNode;
+
+          if (expressionState === ExpressionState.parameterGroup) {
+            if (
+              currentNode.nodeType === ExpressionNodeType.alpha &&
+              currentNode.parentNode
+            ) {
+              currentNode = currentNode.parentNode as ExpressionNode;
+            }
+          } else {
+            expressionState = ExpressionState.group;
+          }
         }
       }
 
@@ -152,7 +165,9 @@ export function ExpressionParser(expression: string) {
         if (
           currentNode.nodeType === ExpressionNodeType.alpha &&
           currentNode.parentNode &&
-          currentNode.parentNode.nodeType === ExpressionNodeType.expression
+          (currentNode.parentNode.nodeType === ExpressionNodeType.expression ||
+            currentNode.parentNode.nodeType ===
+              ExpressionNodeType.parameterGroup)
         ) {
           currentNode = currentNode.parentNode as ExpressionNode;
           expressionState = ExpressionState.group;
@@ -296,7 +311,7 @@ export function ExpressionParser(expression: string) {
         expressionState = ExpressionState.parameterGroup;
 
         let expressionNode = {
-          nodeType: ExpressionNodeType.expression,
+          nodeType: ExpressionNodeType.parameterGroup,
           nodes: [],
           value: 0,
           parentNode: alphaNode,
@@ -315,11 +330,12 @@ export function ExpressionParser(expression: string) {
         alphaValue = '';
         currentNode = currentNode.parentNode as ExpressionNode;
         expressionState = ExpressionState.empty;
-
         if (
           currentNode.nodeType === ExpressionNodeType.alpha &&
           currentNode.parentNode &&
-          currentNode.parentNode.nodeType === ExpressionNodeType.expression
+          (currentNode.parentNode.nodeType === ExpressionNodeType.expression ||
+            currentNode.parentNode.nodeType ===
+              ExpressionNodeType.parameterGroup)
         ) {
           currentNode = currentNode.parentNode as ExpressionNode;
           expressionState = ExpressionState.group;
