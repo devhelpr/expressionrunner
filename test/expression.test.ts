@@ -13,7 +13,6 @@ import {
 } from '../src/index';
 
 import { JustADate } from '../src/utils/date-helper';
-
 /*
 const logTree = (tree: any, treeIndex: number) => {
   //return;
@@ -621,4 +620,51 @@ test('Math.add(Math.PI(), 5)', () => {
 
   let result = Math.floor(executeExpressionTree(tree, {}));
   expect(result).toStrictEqual(8);
+});
+
+test("iemandhuishoudencorona10dgn=='nee' && huisgenootmetkoortsofbenauwdheid=='ja'", () => {
+  let tree = createExpressionTree(
+    "(iemandhuishoudencorona10dgn=='nee') && (huisgenootmetkoortsofbenauwdheid=='ja')"
+  );
+  //logTree(tree, 0);
+
+  let result = Math.floor(
+    executeExpressionTree(tree, {
+      huisgenootmetkoortsofbenauwdheid: 'ja',
+      iemandhuishoudencorona10dgn: 'nee',
+    })
+  );
+  expect(result).toStrictEqual(1);
+});
+
+test("(iemandhuishoudencorona10dgn=='nee') && ((huisgenootmetkoortsofbenauwdheid=='nee') || (heeftbroertjezusjeafg10dgncontactmetcorona=='nee'))", () => {
+  let tree = createExpressionTree(
+    "(iemandhuishoudencorona10dgn=='nee') && ((huisgenootmetkoortsofbenauwdheid=='nee') || (heeftbroertjezusjeafg10dgncontactmetcorona=='nee'))"
+  );
+  //logTree(tree, 0);
+
+  let result = Math.floor(
+    executeExpressionTree(tree, {
+      huisgenootmetkoortsofbenauwdheid: 'ja',
+      iemandhuishoudencorona10dgn: 'nee',
+      heeftbroertjezusjeafg10dgncontactmetcorona: 'nee',
+    })
+  );
+  expect(result).toStrictEqual(1);
+});
+
+test("ongeldige waardes: (iemandhuishoudencorona10dgn=='nee') && ((huisgenootmetkoortsofbenauwdheid=='nee') || (heeftbroertjezusjeafg10dgncontactmetcorona=='nee'))", () => {
+  let tree = createExpressionTree(
+    "(iemandhuishoudencorona10dgn=='nee') && ((huisgenootmetkoortsofbenauwdheid=='nee') || (heeftbroertjezusjeafg10dgncontactmetcorona=='nee'))"
+  );
+  //logTree(tree, 0);
+
+  let result = Math.floor(
+    executeExpressionTree(tree, {
+      huisgenootmetkoortsofbenauwdheid: 'ja',
+      iemandhuishoudencorona10dgn: '',
+      heeftbroertjezusjeafg10dgncontactmetcorona: '',
+    })
+  );
+  expect(result).toStrictEqual(0);
 });

@@ -146,12 +146,6 @@ function ExpressionTreeExecuteForOperator(
           }
           //console.log("keyword func",node.value, parameters, nodeForParameterExtraction);
           const functionReturnValue = getFunction(node.value, ...parameters);
-          console.log(
-            'functionReturnValue',
-            node.value,
-            typeof functionReturnValue,
-            functionReturnValue
-          );
           let newNode = {
             value: functionReturnValue,
             rawValue: functionReturnValue,
@@ -384,6 +378,7 @@ function ExpressionTreeExecuteForOperator(
           currentOperator === '&&' &&
           operator.indexOf(currentOperator) >= 0
         ) {
+          //console.log("&& result", currentValue , valueForExpression, currentValue && valueForExpression);
           currentValue = currentValue && valueForExpression;
 
           currentNode = {
@@ -578,13 +573,6 @@ function ExpressionTreeExecuteForOperator(
           currentOperator === '==' &&
           operator.indexOf(currentOperator) >= 0
         ) {
-          console.log(
-            'compare == ',
-            node.nodeType,
-            currentValue,
-            valueForExpression
-          );
-
           if (node.nodeType === ExpressionNodeType.string) {
             // eslint-disable-next-line
             currentValue = Number(currentRawValue == valueForExpression);

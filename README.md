@@ -38,6 +38,11 @@ alert(`result : ${result}`);
 
 ## TODO
 
+- Better handling of negative numbers like -1 instead of needing (-1)
+	- if first key == "-" and following char is a number.. then switch node
+		to number
+- aaa=='1' && bbb=='2' should work instead of needing () 
+
 - Support comparisons with strings (' and ") and boolean values
 	- Support for specific keywords .. true and false
 
@@ -52,3 +57,4 @@ alert(`result : ${result}`);
 
 - Support for libaries of functions (math ...)
 
+- Build function map out of expression tree to execute directly
