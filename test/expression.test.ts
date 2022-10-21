@@ -232,6 +232,19 @@ test('calculates with cells and rows', () => {
   ).toBe(48);
 });
 
+test('receive value from cells and rows', () => {
+  let tree = createExpressionTree('A2');
+  //let tree = createExpressionTree('Math.pow(x+2,2)+16');
+  //let tree = createExpressionTree('25+16');
+  //logTree(tree, 0);
+  const grid: any = [[5], [7], [8], [9], [19]];
+  let values = convertGridToNamedVariables(grid);
+  //console.log(values);
+  expect(
+    Math.floor(executeExpressionTree(tree, { ...values, values: grid }))
+  ).toBe(7);
+});
+
 test('calculates 1&1', () => {
   let tree = createExpressionTree('1&1');
   expect(executeExpressionTree(tree, {})).toBe(1);
@@ -327,9 +340,19 @@ test('compare named Value with string', () => {
   expect(executeExpressionTree(tree, { test: 'hello' })).toBe(1);
 });
 
+test('compare named Value with string for unequality', () => {
+  let tree = createExpressionTree('test!="hi"');
+  expect(executeExpressionTree(tree, { test: 'hello' })).toBe(1);
+});
+
 test('compare named Value with string', () => {
   let tree = createExpressionTree('test=="hello"');
   expect(executeExpressionTree(tree, { test: 'test' })).toBe(0);
+});
+
+test('compare values for unequality', () => {
+  let tree = createExpressionTree('10 != 11');
+  expect(executeExpressionTree(tree, {})).toBe(1);
 });
 
 test('return string', () => {

@@ -78,7 +78,7 @@ function ExpressionTreeExecuteForOperator(
     let nodes: ExpressionNode[] = [];
     let currentNode: any = undefined;
 
-    expressionTree.nodes.map(node => {
+    expressionTree.nodes.forEach(node => {
       if (
         node.nodeType === ExpressionNodeType.numeric &&
         (currentExpressionNodeType === ExpressionNodeType.expression ||
@@ -123,7 +123,7 @@ function ExpressionTreeExecuteForOperator(
           ) {
             nodeForParameterExtraction = node.nodes[0];
           }
-          nodeForParameterExtraction.nodes.map((node: any) => {
+          nodeForParameterExtraction.nodes.forEach((node: any) => {
             if (node.nodeType !== ExpressionNodeType.parameterSeparator) {
               nodesHelper.nodes.push(node);
             } else {
@@ -172,7 +172,7 @@ function ExpressionTreeExecuteForOperator(
           ) {
             nodeForParameterExtraction = node.nodes[0];
           }
-          nodeForParameterExtraction.nodes.map((node: any) => {
+          nodeForParameterExtraction.nodes.forEach((node: any) => {
             if (node.nodeType !== ExpressionNodeType.parameterSeparator) {
               nodesHelper.nodes.push(node);
             } else {
@@ -590,6 +590,26 @@ function ExpressionTreeExecuteForOperator(
             nodesStack.pop();
           }
         } else if (
+          currentOperator === '!=' &&
+          operator.indexOf(currentOperator) >= 0
+        ) {
+          if (node.nodeType === ExpressionNodeType.string) {
+            // eslint-disable-next-line
+            currentValue = Number(currentRawValue != valueForExpression);
+          } else {
+            currentValue = Number(currentValue !== valueForExpression);
+          }
+
+          currentNode = {
+            nodeType: ExpressionNodeType.numeric,
+            value: currentValue,
+            nodes: [],
+          };
+          nodesStack.pop();
+          if (isLastNodeOfOperatorOrValue(nodesStack, '!=')) {
+            nodesStack.pop();
+          }
+        } else if (
           currentOperator === '*' &&
           operator.indexOf(currentOperator) >= 0
         ) {
@@ -698,7 +718,7 @@ function ExpressionTreeExecute(expressionTree: ExpressionNode, values: any) {
     );
     nodes = ExpressionTreeExecuteForOperator(
       nodes,
-      ['=', '<', '>', '>=', '<=', '=='],
+      ['=', '<', '>', '>=', '<=', '==', '!='],
       values
     );
     nodes = ExpressionTreeExecuteForOperator(nodes, ['^', '&', '|'], values);
@@ -728,8 +748,8 @@ export function extractValueParametersFromExpressionTree(
       return [...extractValueParametersFromExpressionTree(node)];
     });
     let parameters: string[] = [];
-    result.map(parameter => {
-      parameter.map(parameterName => {
+    result.forEach(parameter => {
+      parameter.forEach(parameterName => {
         parameters.push(parameterName);
         return true;
       });
