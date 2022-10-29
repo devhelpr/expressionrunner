@@ -36,7 +36,8 @@ export function clearExpressionFunctions() {
 
 export function registerExpressionFunction(
   name: string,
-  expressionFunction: (value: number, ...args: number[]) => number
+  expressionFunction: ((value: number, ...args: number[]) => number |
+    ((value: string, ...args: string[]) => number))
 ) {
   expressionFunctions[name] = expressionFunction;
 }

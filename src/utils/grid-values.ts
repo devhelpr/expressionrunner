@@ -34,6 +34,10 @@ export function getRangeFromValues(
 }
 
 export function isRangeValue(valueParameter: string) {
+  if (valueParameter >= 'A' && valueParameter <= 'Z' && valueParameter.length === 1) {
+    return true;
+  }
+  
   return valueParameter.toString().indexOf(':') >= 0;
 }
 

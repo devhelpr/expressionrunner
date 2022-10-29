@@ -2,6 +2,7 @@ import { createExpressionTree } from '../src/components/expression-parser';
 
 import {
   executeExpressionTree,
+  extractValueParametersFromExpressionTree,
   registerExpressionFunction,
 } from '../src/components/expression-tree-execute';
 
@@ -690,4 +691,35 @@ test("ongeldige waardes: (iemandhuishoudencorona10dgn=='nee') && ((huisgenootmet
     })
   );
   expect(result).toStrictEqual(0);
+});
+
+test('extractValueParametersFromExpressionTree', () => {
+  const tree = createExpressionTree(
+    "abc == 1 && def == 2"
+  );
+  const params = extractValueParametersFromExpressionTree(tree);
+  console.log("params", params);
+  expect(params).toMatchObject(["abc","def"]);
+});
+
+test('truthy check', () => {
+  const tree = createExpressionTree(
+    "abc"
+  );
+  let result = executeExpressionTree(tree, {
+      abc: 'value'
+    });
+    console.log("truthy check result", result);
+  expect(result).toBeTruthy();
+});
+
+test('falsy check', () => {
+  const tree = createExpressionTree(
+    "abc"
+  );
+  let result = executeExpressionTree(tree, {
+      abc: ''
+    });
+    console.log("falsy check result", result);
+  expect(result).toBeFalsy();
 });
